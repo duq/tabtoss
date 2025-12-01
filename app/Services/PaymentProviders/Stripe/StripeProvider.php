@@ -297,6 +297,7 @@ class StripeProvider implements PaymentProviderInterface
             $portal = $stripe->billingPortal->sessions->create([
                 'customer' => $subscription->user->stripeData()->firstOrFail()->stripe_customer_id,
                 'return_url' => SubscriptionResource::getUrl(),
+                'configuration' => $portalConfigId,
             ]);
 
         } catch (ApiErrorException $e) {
