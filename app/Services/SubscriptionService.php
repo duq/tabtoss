@@ -406,7 +406,10 @@ class SubscriptionService
         return $result;
     }
 
-    public function isUserSubscribed(?User $user, ?string $productSlug = null): bool
+    /**
+     * @param  mixed|null  $productSlug  - one or more product slugs to check subscription against
+     */
+    public function isUserSubscribed(?User $user, mixed $productSlug = null): bool
     {
         if (! $user) {
             return false;
@@ -419,7 +422,13 @@ class SubscriptionService
 
         if ($productSlug) {
             $subscriptions = $subscriptions->filter(function (Subscription $subscription) use ($productSlug) {
-                return $subscription->plan->product->slug === $productSlug;
+                if (is_string($productSlug)) {
+                    return $subscription->plan->product->slug === $productSlug;
+                } elseif (is_array($productSlug)) {
+                    return in_array($subscription->plan->product->slug, $productSlug);
+                }
+
+                return false;
             });
         }
 
@@ -482,7 +491,10 @@ class SubscriptionService
     public function canEditSubscriptionPaymentDetails(Subscription $subscription)
     {
         return $subscription->type === SubscriptionType::PAYMENT_PROVIDER_MANAGED &&
-            ($subscription->status === SubscriptionStatus::ACTIVE->value || $subscription->status === SubscriptionStatus::PAST_DUE->value);
+            ($subscription->status === SubscriptionStatus::ACTIVE->value ||
+                $subscription->status === SubscriptionStatus::PAST_DUE->value ||
+                $subscription->status === SubscriptionStatus::CANCELED->value
+            );
     }
 
     public function canCancelSubscription(Subscription $subscription)
