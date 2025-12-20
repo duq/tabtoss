@@ -46,6 +46,7 @@ class RoleResource extends Resource
                     TextInput::make('name')
                         ->label(__('Role Name'))
                         ->required()
+                        ->unique(ignoreRecord: true)
                         ->helperText('The name of the role.')
                         ->disabled(fn (?Model $record) => $record && $record->name === 'admin')
                         ->maxLength(255),
