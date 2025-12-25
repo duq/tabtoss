@@ -42,7 +42,7 @@ class EditUser extends EditRecord
                 ->visible(fn (): bool => config('app.anonymization_enabled', false))
                 ->requiresConfirmation()
                 ->modalHeading(__('Anonymize User Data'))
-                ->modalDescription(__('Are you sure you want to anonymize this user? This action is irreversible and will scramble all personal identifiable information to be GDPR compliant.'))
+                ->modalDescription(__('Are you sure you want to anonymize this user? This action is irreversible and will scramble all personal identifiable information.'))
                 ->modalSubmitActionLabel(__('Yes, anonymize'))
                 ->action(function (User $record, UserService $userService) {
                     $userService->anonymize($record);

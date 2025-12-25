@@ -319,7 +319,7 @@ class GeneralSettings extends Component implements HasForms
                                 ->schema([
                                     Toggle::make('anonymization_enabled')
                                         ->label(__('Anonymization Enabled'))
-                                        ->helperText(__('If enabled, you will be able to anonymize user data from the user view page to be GDPR compliant.'))
+                                        ->helperText(__('If enabled, you will be able to anonymize user data from the user edit page.'))
                                         ->required(),
                                 ]),
                         ]),
