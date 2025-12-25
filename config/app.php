@@ -215,6 +215,8 @@ return [
         'enabled' => env('ADMIN_SETTINGS_ENABLED', true),
     ],
 
+    'anonymization_enabled' => env('ANONYMIZATION_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Class Aliases
