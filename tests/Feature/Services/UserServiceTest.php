@@ -15,7 +15,7 @@ class UserServiceTest extends FeatureTest
             'email' => 'john@example.com',
             'public_name' => 'JohnD',
             'phone_number' => '123456789',
-            'notes' => 'Some sensitive notes',
+            'notes' => 'Some notes',
         ]);
 
         $user->address()->create([
@@ -36,7 +36,7 @@ class UserServiceTest extends FeatureTest
         $this->assertNull($user->phone_number);
         $this->assertNull($user->email_verified_at);
         $this->assertNull($user->phone_number_verified_at);
-        $this->assertEquals('Some sensitive notes', $user->notes); // Should remain as is
+        $this->assertEquals('Some notes', $user->notes); // Should remain as is
         $this->assertNull($user->address);
         $this->assertNotEquals('password', $user->password);
     }
