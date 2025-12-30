@@ -43,10 +43,11 @@ class TransactionService
     public function updateTransactionByPaymentProviderTxId(
         string $paymentProviderTransactionId,
         string $paymentProviderStatus,
-        TransactionStatus $status,
+        ?TransactionStatus $status = null,
         ?string $errorReason = null,
         ?int $newAmount = null,
         ?int $newFees = null,
+        ?int $newTax = null,
     ): Transaction {
         $transaction = Transaction::where('payment_provider_transaction_id', $paymentProviderTransactionId)->firstOrFail();
 
@@ -57,21 +58,26 @@ class TransactionService
             $errorReason,
             $newAmount,
             $newFees,
+            $newTax,
         );
     }
 
     public function updateTransaction(
         Transaction $transaction,
         string $paymentProviderStatus,
-        TransactionStatus $status,
+        ?TransactionStatus $status = null,
         ?string $errorReason = null,
         ?int $newAmount = null,
         ?int $newFees = null,
+        ?int $newTax = null,
     ) {
         $data = [
-            'status' => $status->value,
             'payment_provider_status' => $paymentProviderStatus,
         ];
+
+        if ($status !== null) {
+            $data['status'] = $status->value;
+        }
 
         if ($newAmount !== null) {
             $data['amount'] = $newAmount;
@@ -83,6 +89,10 @@ class TransactionService
 
         if ($newFees !== null) {
             $data['total_fees'] = $newFees;
+        }
+
+        if ($newTax !== null) {
+            $data['total_tax'] = $newTax;
         }
 
         $transaction->update($data);
