@@ -1,40 +1,36 @@
 <x-layouts.app>
     <x-slot name="title">
-        {{ __('Bookmarks') }}
+        {{ __('Bookmarks Dashboard') }}
     </x-slot>
 
-    <div class="mx-auto w-full max-w-6xl px-4 py-12">
-        <div class="flex items-center justify-between">
+    <div class="mx-auto w-full max-w-7xl px-4 py-12">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <x-heading.h2 class="text-primary-900">{{ __('Bookmarks by Category') }}</x-heading.h2>
-                <p class="text-sm text-neutral-500">{{ __('Browse bookmarks you have already categorized.') }}</p>
+                <x-heading.h2 class="text-primary-900">{{ __('Bookmarks Dashboard') }}</x-heading.h2>
+                <p class="text-sm text-neutral-500">{{ __('A kanban view of your categorized bookmarks.') }}</p>
             </div>
-            <a class="btn btn-primary" href="{{ route('home') }}">{{ __('Back to Inbox') }}</a>
+            <div class="flex flex-wrap items-center gap-3">
+                <a class="btn btn-ghost" href="{{ route('bookmarks.inbox') }}">
+                    {{ __('Go to Inbox') }}
+                </a>
+                <a class="btn btn-primary" href="{{ route('filament.dashboard.resources.bookmark-categories.index') }}">
+                    {{ __('Manage Categories') }}
+                </a>
+            </div>
         </div>
 
-        @if ($categories->isEmpty())
-            <div class="mt-8 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 p-8 text-center">
-                <p class="text-lg font-medium text-neutral-700">{{ __('No categories yet.') }}</p>
-                <p class="mt-2 text-sm text-neutral-500">{{ __('Create a category and swipe right on a bookmark to add it here.') }}</p>
-            </div>
-        @endif
+        <div class="mt-8 overflow-x-auto">
+            <div class="flex gap-4 pb-4">
+                @foreach ($categories as $category)
+                    <div class="w-72 flex-shrink-0 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-neutral-800">{{ $category->name }}</h3>
+                            <span class="text-xs text-neutral-400">{{ $category->bookmarks->count() }}</span>
+                        </div>
 
-        <div class="mt-8 grid gap-6 lg:grid-cols-2">
-            @foreach ($categories as $category)
-                <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-neutral-900">{{ $category->name }}</h3>
-                        <span class="text-xs text-neutral-400">
-                            {{ $category->bookmarks->count() }} {{ __('items') }}
-                        </span>
-                    </div>
-
-                    @if ($category->bookmarks->isEmpty())
-                        <p class="mt-4 text-sm text-neutral-500">{{ __('No bookmarks in this category yet.') }}</p>
-                    @else
-                        <ul class="mt-4 space-y-3">
-                            @foreach ($category->bookmarks as $bookmark)
-                                <li class="rounded-lg border border-neutral-100 px-4 py-3">
+                        <div class="mt-4 space-y-3">
+                            @forelse ($category->bookmarks as $bookmark)
+                                <div class="rounded-xl border border-neutral-100 bg-neutral-50 px-3 py-2">
                                     <p class="text-sm font-medium text-neutral-800">
                                         {{ $bookmark->title ?? $bookmark->url }}
                                     </p>
@@ -46,17 +42,14 @@
                                     >
                                         {{ $bookmark->url }}
                                     </a>
-                                    @if ($bookmark->folder_path)
-                                        <p class="mt-1 text-xs text-neutral-400">
-                                            {{ __('Folder:') }} {{ $bookmark->folder_path }}
-                                        </p>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
-            @endforeach
+                                </div>
+                            @empty
+                                <p class="text-xs text-neutral-400">{{ __('No bookmarks yet.') }}</p>
+                            @endforelse
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
     </div>
 </x-layouts.app>

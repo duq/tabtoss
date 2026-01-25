@@ -7,16 +7,21 @@
 
 <div
     class="mx-auto w-full max-w-4xl"
-    x-data="bookmarkImport(@js([
+    x-data="bookmarkInbox(@js([
         'manageCategoriesUrl' => route('filament.dashboard.resources.bookmark-categories.index'),
     ]))"
 >
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-2xl font-semibold text-primary-900">{{ __('Bookmark Inbox') }}</h2>
-            <p class="text-sm text-neutral-500">
-                {{ __('Import your bookmarks and swipe to organize them.') }}
-            </p>
+            <div class="mt-2 flex flex-wrap gap-4 text-sm text-neutral-500">
+                <span>
+                    {{ __('Imported:') }} {{ $importedCount }} {{ __('bookmarks') }}
+                </span>
+                <span>
+                    {{ __('Current bookmarks:') }} {{ $bookmarksCount }}
+                </span>
+            </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <button
@@ -26,6 +31,9 @@
             >
                 {{ __('Import Bookmarks') }}
             </button>
+            <a class="btn btn-ghost" href="{{ route('bookmarks.index') }}">
+                {{ __('View Dashboard') }}
+            </a>
             <a
                 class="btn btn-ghost"
                 :href="manageCategoriesUrl"
@@ -57,7 +65,13 @@
                 </div>
             @else
                 @foreach ($bookmarks as $bookmark)
-                    <div class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+                    <div
+                        class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition"
+                        :style="draggingId === {{ $bookmark->id }} ? dragStyle : ''"
+                        @pointerdown="startDrag($event, {{ $bookmark->id }})"
+                        @pointerup="endDrag({{ $bookmark->id }})"
+                        @pointercancel="cancelDrag()"
+                    >
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
                                 <p class="text-xs uppercase tracking-wide text-neutral-400">{{ __('Bookmark') }}</p>
@@ -83,6 +97,7 @@
                                 <select
                                     class="select select-bordered w-full"
                                     wire:model="selectedCategories.{{ $bookmark->id }}"
+                                    @pointerdown.stop
                                 >
                                     <option value="">{{ __('Select category') }}</option>
                                     @foreach ($categories as $category)
@@ -95,8 +110,17 @@
                                     type="button"
                                     class="btn btn-primary"
                                     wire:click="categorize({{ $bookmark->id }})"
+                                    @pointerdown.stop
                                 >
                                     {{ __('Categorize') }}
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-outline btn-error"
+                                    wire:click="markDeleted({{ $bookmark->id }})"
+                                    @pointerdown.stop
+                                >
+                                    {{ __('Delete') }}
                                 </button>
                                 <span class="text-xs text-neutral-400">
                                     {{ __('Status:') }} {{ $bookmark->status }}
@@ -113,17 +137,67 @@
             <ul class="mt-3 space-y-2 text-sm text-neutral-600">
                 <li>{{ __('Import your bookmarks HTML file to load them here.') }}</li>
                 <li>{{ __('Pick a category and click categorize to keep them organized.') }}</li>
+                <li>{{ __('Swipe left to delete, swipe right to pick a category.') }}</li>
                 <li>{{ __('Use the dashboard to manage categories anytime.') }}</li>
             </ul>
+        </div>
+    </div>
+
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        x-show="showCategoryPicker"
+        x-transition.opacity
+        x-cloak
+        @keydown.escape.window="closeCategoryPicker()"
+    >
+        <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-neutral-900">{{ __('Choose a category') }}</h3>
+                <button type="button" class="btn btn-ghost btn-sm" @click="closeCategoryPicker()">✕</button>
+            </div>
+
+            @if ($categories->isEmpty())
+                <p class="mt-4 text-sm text-neutral-500">
+                    {{ __('No categories yet. Create one in the dashboard.') }}
+                </p>
+            @else
+                <div class="mt-4 grid gap-2">
+                    @foreach ($categories as $category)
+                        <button
+                            type="button"
+                            class="btn btn-outline btn-sm justify-start"
+                            @click="selectCategory({{ $category->id }})"
+                        >
+                            {{ $category->name }}
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button type="button" class="btn btn-ghost" @click="closeCategoryPicker()">
+                    {{ __('Cancel') }}
+                </button>
+                <a class="btn btn-primary" :href="manageCategoriesUrl">
+                    {{ __('Manage Categories') }}
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    function bookmarkImport({ manageCategoriesUrl }) {
+    function bookmarkInbox({ manageCategoriesUrl }) {
         return {
             manageCategoriesUrl,
             importStatus: null,
+            showCategoryPicker: false,
+            pendingBookmarkId: null,
+            draggingId: null,
+            dragStartX: 0,
+            dragStartY: 0,
+            dragDeltaX: 0,
+            threshold: 90,
 
             async handleFile(event) {
                 const file = event.target.files[0];
@@ -227,6 +301,70 @@
                     return 'chrome';
                 }
                 return null;
+            },
+
+            startDrag(event, bookmarkId) {
+                if (event.target.closest('button, select, option, a')) {
+                    return;
+                }
+                this.draggingId = bookmarkId;
+                this.dragStartX = event.clientX;
+                this.dragStartY = event.clientY;
+                this.dragDeltaX = 0;
+                event.currentTarget.setPointerCapture(event.pointerId);
+                event.currentTarget.addEventListener('pointermove', this.handleDrag);
+            },
+
+            handleDrag(event) {
+                this.dragDeltaX = event.clientX - this.dragStartX;
+            },
+
+            async endDrag(bookmarkId) {
+                if (this.draggingId !== bookmarkId) {
+                    return;
+                }
+                const deltaX = this.dragDeltaX;
+                this.resetDrag();
+
+                if (deltaX < -this.threshold) {
+                    await this.$wire.markDeleted(bookmarkId);
+                    await this.$wire.$refresh();
+                } else if (deltaX > this.threshold) {
+                    this.openCategoryPicker(bookmarkId);
+                }
+            },
+
+            cancelDrag() {
+                this.resetDrag();
+            },
+
+            resetDrag() {
+                this.draggingId = null;
+                this.dragDeltaX = 0;
+            },
+
+            get dragStyle() {
+                return `transform: translateX(${this.dragDeltaX}px) rotate(${this.dragDeltaX / 16}deg);`;
+            },
+
+            openCategoryPicker(bookmarkId) {
+                this.pendingBookmarkId = bookmarkId;
+                this.showCategoryPicker = true;
+            },
+
+            closeCategoryPicker() {
+                this.showCategoryPicker = false;
+                this.pendingBookmarkId = null;
+            },
+
+            async selectCategory(categoryId) {
+                if (! this.pendingBookmarkId) {
+                    return;
+                }
+                const bookmarkId = this.pendingBookmarkId;
+                this.closeCategoryPicker();
+                await this.$wire.assignCategory(bookmarkId, categoryId);
+                await this.$wire.$refresh();
             },
 
         };

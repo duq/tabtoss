@@ -8,9 +8,29 @@ use Illuminate\View\View;
 
 class BookmarksController extends Controller
 {
+    private const DEFAULT_CATEGORIES = [
+        'Work/Professional',
+        'Learning/Education',
+        'Tech',
+        'Tools',
+        'Personal',
+        'Finance',
+        'Shopping',
+        'Media/Entertainment',
+        'News',
+        'Social & Communication',
+        'Health',
+        'Travel',
+        'Creative',
+        'Reference',
+        'Archive',
+    ];
+
     public function index(): View
     {
         $userId = auth()->id();
+
+        $this->ensureDefaultCategories($userId);
 
         $categories = BookmarkCategory::where('user_id', $userId)
             ->with(['bookmarks' => function ($query) {
@@ -24,5 +44,37 @@ class BookmarksController extends Controller
         return view('bookmarks.index', [
             'categories' => $categories,
         ]);
+    }
+
+    public function inbox(): View
+    {
+        $userId = auth()->id();
+
+        $this->ensureDefaultCategories($userId);
+
+        return view('bookmarks.inbox');
+    }
+
+    private function ensureDefaultCategories(int $userId): void
+    {
+        $existing = BookmarkCategory::where('user_id', $userId)
+            ->pluck('name')
+            ->map(fn (string $name) => mb_strtolower($name))
+            ->all();
+
+        $sort = 0;
+        foreach (self::DEFAULT_CATEGORIES as $name) {
+            if (in_array(mb_strtolower($name), $existing, true)) {
+                $sort++;
+                continue;
+            }
+
+            BookmarkCategory::create([
+                'user_id' => $userId,
+                'name' => $name,
+                'sort' => $sort,
+            ]);
+            $sort++;
+        }
     }
 }

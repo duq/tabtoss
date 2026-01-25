@@ -3,11 +3,6 @@
         {{ __('SaaSykit - Laravel SaaS Starter Kit') }}
     </x-slot>
 
-    @auth
-        <div class="mx-auto w-full max-w-6xl px-4 py-12">
-            <livewire:bookmarks.swipe-inbox />
-        </div>
-    @else
     <x-section.hero class="w-full mb-8 md:mb-72">
 
         <div class="mx-auto text-center h-160 md:h-180 px-4">
@@ -770,5 +765,4 @@
             </x-accordion.item>
         </x-accordion>
     </div>
-    @endauth
 </x-layouts.app>

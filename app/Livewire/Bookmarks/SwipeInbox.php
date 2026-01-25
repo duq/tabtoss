@@ -15,8 +15,12 @@ class SwipeInbox extends Component
 
     public function render()
     {
+        $bookmarks = $this->getBookmarks();
+
         return view('livewire.bookmarks.swipe-inbox', [
-            'bookmarks' => $this->getBookmarks(),
+            'bookmarks' => $bookmarks,
+            'bookmarksCount' => $bookmarks->count(),
+            'importedCount' => Bookmark::where('user_id', auth()->id())->count(),
             'categories' => $this->getCategories(),
         ]);
     }

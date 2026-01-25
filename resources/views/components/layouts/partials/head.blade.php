@@ -24,6 +24,12 @@
 <!-- Scripts -->
 @vite(['resources/css/app.css'])
 
+<style>
+    [x-cloak] {
+        display: none !important;
+    }
+</style>
+
 @stack('head')
 
 @livewireStyles

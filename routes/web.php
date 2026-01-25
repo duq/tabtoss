@@ -105,6 +105,10 @@ Route::get('/bookmarks', [BookmarksController::class, 'index'])
     ->name('bookmarks.index')
     ->middleware('auth');
 
+Route::get('/bookmarks/inbox', [BookmarksController::class, 'inbox'])
+    ->name('bookmarks.inbox')
+    ->middleware('auth');
+
 Route::get('/subscription/{subscriptionUuid}/change-plan/{planSlug}', [
     App\Http\Controllers\SubscriptionController::class,
     'changePlan',
