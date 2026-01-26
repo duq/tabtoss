@@ -56,6 +56,47 @@
         </div>
     </template>
 
+    <div class="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h4 class="text-sm font-semibold text-neutral-700">{{ __('Bulk categorize') }}</h4>
+        <p class="mt-2 text-sm text-neutral-500">
+            {{ __('Select a website domain to categorize all matching bookmarks.') }}
+        </p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-[2fr,2fr,1fr] sm:items-end">
+            <div class="space-y-2">
+                <label class="text-xs text-neutral-400">{{ __('Website domain') }}</label>
+                <select class="select select-bordered w-full" wire:model="bulkDomain" @pointerdown.stop>
+                    <option value="">{{ __('Select domain') }}</option>
+                    @foreach ($this->domainOptions as $option)
+                        <option value="{{ $option['domain'] }}">
+                            {{ $option['domain'] }} ({{ $option['count'] }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs text-neutral-400">{{ __('Category') }}</label>
+                <select class="select select-bordered w-full" wire:model="bulkCategoryId" @pointerdown.stop>
+                    <option value="">{{ __('Select category') }}</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <button
+                type="button"
+                class="btn btn-primary w-full"
+                wire:click="bulkAssignCategory"
+                @pointerdown.stop
+            >
+                {{ __('Apply') }}
+            </button>
+        </div>
+    </div>
+
     <div class="mt-8 grid gap-6 lg:grid-cols-[2fr,1fr]">
         <div class="space-y-4">
             @if ($bookmarks->isEmpty())

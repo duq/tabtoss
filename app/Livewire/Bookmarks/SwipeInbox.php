@@ -12,6 +12,8 @@ class SwipeInbox extends Component
 {
     public int $stackSize = 15;
     public array $selectedCategories = [];
+    public ?string $bulkDomain = null;
+    public ?int $bulkCategoryId = null;
 
     public function render()
     {
@@ -119,6 +121,31 @@ class SwipeInbox extends Component
         unset($this->selectedCategories[$bookmarkId]);
     }
 
+    public function bulkAssignCategory(): void
+    {
+        if (! $this->bulkDomain || ! $this->bulkCategoryId) {
+            return;
+        }
+
+        $category = BookmarkCategory::where('user_id', auth()->id())
+            ->where('id', $this->bulkCategoryId)
+            ->first();
+
+        if (! $category) {
+            return;
+        }
+
+        $normalizedDomain = $this->normalizeDomain($this->bulkDomain);
+        $this->bulkUpdateByDomain($normalizedDomain, function (array $ids) use ($category) {
+            Bookmark::where('user_id', auth()->id())
+                ->whereIn('id', $ids)
+                ->update([
+                    'category_id' => $category->id,
+                    'status' => Bookmark::STATUS_KEPT,
+                ]);
+        });
+    }
+
     public function fetchBookmarks(): array
     {
         return $this->getBookmarks()
@@ -142,6 +169,28 @@ class SwipeInbox extends Component
             ->get();
     }
 
+    public function getDomainOptionsProperty(): array
+    {
+        $counts = [];
+
+        foreach ($this->newBookmarksCursor() as $bookmark) {
+            $domain = $this->normalizeDomain($bookmark->url);
+            if ($domain === '') {
+                continue;
+            }
+            $counts[$domain] = ($counts[$domain] ?? 0) + 1;
+        }
+
+        arsort($counts);
+
+        return collect($counts)->map(function (int $count, string $domain) {
+            return [
+                'domain' => $domain,
+                'count' => $count,
+            ];
+        })->values()->all();
+    }
+
     private function getCategories(): Collection
     {
         return BookmarkCategory::where('user_id', auth()->id())
@@ -155,5 +204,44 @@ class SwipeInbox extends Component
         return Bookmark::where('user_id', auth()->id())
             ->where('id', $bookmarkId)
             ->first();
+    }
+
+    private function normalizeDomain(string $url): string
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($host === null) {
+            $host = $url;
+        }
+
+        return strtolower(preg_replace('/^www\./', '', $host));
+    }
+
+    private function newBookmarksCursor()
+    {
+        return Bookmark::where('user_id', auth()->id())
+            ->where('status', Bookmark::STATUS_NEW)
+            ->select(['id', 'url'])
+            ->cursor();
+    }
+
+    private function bulkUpdateByDomain(string $domain, callable $updater): void
+    {
+        $ids = [];
+
+        foreach ($this->newBookmarksCursor() as $bookmark) {
+            if ($this->normalizeDomain($bookmark->url) !== $domain) {
+                continue;
+            }
+
+            $ids[] = $bookmark->id;
+            if (count($ids) >= 500) {
+                $updater($ids);
+                $ids = [];
+            }
+        }
+
+        if ($ids !== []) {
+            $updater($ids);
+        }
     }
 }
