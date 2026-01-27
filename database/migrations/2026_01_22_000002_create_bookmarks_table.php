@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('folder_path')->nullable();
             $table->string('browser')->nullable();
             $table->string('status')->default('new');
+            $table->string('ai_label')->nullable();
             $table->timestamps();
-
             $table->unique(['user_id', 'url_hash']);
             $table->index(['user_id', 'status']);
         });

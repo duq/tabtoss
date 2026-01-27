@@ -7,6 +7,8 @@ use App\Models\BookmarkCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
+use OpenAI;
+use OpenAI\Client;
 
 class SwipeInbox extends Component
 {
@@ -14,9 +16,14 @@ class SwipeInbox extends Component
     public array $selectedCategories = [];
     public ?string $bulkDomain = null;
     public ?int $bulkCategoryId = null;
+    public ?string $aiLabelStatus = null;
+
+    private const AI_LABELS_PER_REQUEST = 10;
+    private const AI_MODEL = 'gpt-4o-mini';
 
     public function render()
     {
+        $this->applyAiLabels();
         $bookmarks = $this->getBookmarks();
 
         return view('livewire.bookmarks.swipe-inbox', [
@@ -243,5 +250,105 @@ class SwipeInbox extends Component
         if ($ids !== []) {
             $updater($ids);
         }
+    }
+
+    private function applyAiLabels(): void
+    {
+        $apiKey = config('services.openai.key');
+        if (! $apiKey) {
+            $this->aiLabelStatus = __('OpenAI API key is not configured.');
+            return;
+        }
+
+        $categories = $this->getCategories();
+        if ($categories->isEmpty()) {
+            $this->aiLabelStatus = __('No categories found for labeling.');
+            return;
+        }
+
+        $bookmarks = Bookmark::where('user_id', auth()->id())
+            ->where('status', Bookmark::STATUS_NEW)
+            ->whereNull('ai_label')
+            ->limit(self::AI_LABELS_PER_REQUEST)
+            ->get(['id', 'title', 'url']);
+
+        if ($bookmarks->isEmpty()) {
+            $this->aiLabelStatus = __('No bookmarks need AI labels.');
+            return;
+        }
+
+        $client = OpenAI::client($apiKey);
+        $categoryNames = $categories->pluck('name')->values()->all();
+
+        foreach ($bookmarks as $bookmark) {
+            $label = $this->generateAiLabel($client, $bookmark, $categoryNames);
+            if ($label === null) {
+                continue;
+            }
+
+            $bookmark->ai_label = $label;
+            $bookmark->save();
+        }
+
+        $this->aiLabelStatus = __('AI labels updated.');
+    }
+
+    public function regenerateAiLabels(): void
+    {
+        Bookmark::where('user_id', auth()->id())
+            ->where('status', Bookmark::STATUS_NEW)
+            ->update([
+                'ai_label' => null,
+            ]);
+
+        $this->applyAiLabels();
+    }
+
+    private function generateAiLabel(Client $client, Bookmark $bookmark, array $categories): ?string
+    {
+        $categoryList = implode(', ', $categories);
+
+        $prompt = <<<PROMPT
+You are labeling a bookmark with a single category from this list:
+{$categoryList}
+
+Bookmark:
+Title: {$bookmark->title}
+URL: {$bookmark->url}
+
+Return only the category name from the list, no extra text.
+PROMPT;
+
+        try {
+            $response = $client->chat()->create([
+                'model' => self::AI_MODEL,
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a classification assistant.',
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt,
+                    ],
+                ],
+                'temperature' => 0,
+            ]);
+        } catch (\Throwable $exception) {
+            return null;
+        }
+
+        $result = trim($response->choices[0]->message->content ?? '');
+        if ($result === '') {
+            return null;
+        }
+
+        foreach ($categories as $category) {
+            if (strcasecmp($category, $result) === 0) {
+                return $category;
+            }
+        }
+
+        return null;
     }
 }

@@ -31,6 +31,14 @@
             >
                 {{ __('Import Bookmarks') }}
             </button>
+            <button
+                type="button"
+                class="btn btn-outline"
+                wire:click="regenerateAiLabels"
+                @pointerdown.stop
+            >
+                {{ __('Regenerate labels') }}
+            </button>
             <a class="btn btn-ghost" href="{{ route('bookmarks.index') }}">
                 {{ __('View Dashboard') }}
             </a>
@@ -55,6 +63,11 @@
             <span x-text="importStatus"></span>
         </div>
     </template>
+    @if ($aiLabelStatus)
+        <div class="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+            {{ $aiLabelStatus }}
+        </div>
+    @endif
 
     <div class="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h4 class="text-sm font-semibold text-neutral-700">{{ __('Bulk categorize') }}</h4>
@@ -113,7 +126,12 @@
                         @pointerup="endDrag({{ $bookmark->id }})"
                         @pointercancel="cancelDrag()"
                     >
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between relative">
+                            @if ($bookmark->ai_label)
+                                <span class="absolute right-3 top-3 rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary-700">
+                                    {{ $bookmark->ai_label }}
+                                </span>
+                            @endif
                             <div class="min-w-0">
                                 <p class="text-xs uppercase tracking-wide text-neutral-400">{{ __('Bookmark') }}</p>
                                 <h3 class="mt-2 text-lg font-semibold text-neutral-900">

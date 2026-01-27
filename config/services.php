@@ -105,4 +105,8 @@ return [
         'from' => env('TWILIO_FROM'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
 ];

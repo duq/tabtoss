@@ -23,6 +23,7 @@ class Bookmark extends Model
         'folder_path',
         'browser',
         'status',
+        'ai_label',
     ];
 
     public function user(): BelongsTo
