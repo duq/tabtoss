@@ -24,6 +24,13 @@ class Bookmark extends Model
         'browser',
         'status',
         'ai_label',
+        'url_status',
+        'url_checked_at',
+    ];
+
+    protected $casts = [
+        'url_status' => 'integer',
+        'url_checked_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

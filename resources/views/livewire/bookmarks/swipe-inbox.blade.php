@@ -24,17 +24,15 @@
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <label class="flex items-center gap-2 text-sm text-neutral-500">
-                <span>{{ __('Filter') }}</span>
-                <select class="select select-bordered select-sm" wire:model="filterDomain" @pointerdown.stop>
-                    <option value="">{{ __('All domains') }}</option>
-                    @foreach ($this->domainOptions as $option)
-                        <option value="{{ $option['domain'] }}">
-                            {{ $option['domain'] }} ({{ $option['count'] }})
-                        </option>
-                    @endforeach
-                </select>
-            </label>
+            <div class="w-full sm:w-80">
+                <input
+                    type="text"
+                    class="input input-bordered input-lg w-full"
+                    placeholder="{{ __('Search by domain (e.g. youtube.com)') }}"
+                    wire:model.live="filterDomain"
+                    @pointerdown.stop
+                />
+            </div>
             <button
                 type="button"
                 class="btn btn-primary"
@@ -143,6 +141,25 @@
                                     {{ $bookmark->ai_label }}
                                 </span>
                             @endif
+                            <span class="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                                @if ($bookmark->url_status === 200)
+                                    <svg viewBox="0 0 24 24" class="h-3 w-3 text-emerald-600" aria-hidden="true">
+                                        <path d="M12 4l6 6h-4v10h-4V10H6z" fill="currentColor"></path>
+                                    </svg>
+                                    {{ __('Live') }}
+                                @elseif (in_array($bookmark->url_status, [0, 404, 500], true))
+                                    <svg viewBox="0 0 24 24" class="h-3 w-3 text-red-600" aria-hidden="true">
+                                        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                    </svg>
+                                    {{ __('Down') }}
+                                @else
+                                    <svg viewBox="0 0 24 24" class="h-3 w-3 text-amber-600" aria-hidden="true">
+                                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                        <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"></circle>
+                                    </svg>
+                                    {{ __('Checking') }}
+                                @endif
+                            </span>
                             <div class="min-w-0">
                                 <p class="text-xs uppercase tracking-wide text-neutral-400">{{ __('Bookmark') }}</p>
                                 <h3 class="mt-2 text-lg font-semibold text-neutral-900">

@@ -4,6 +4,8 @@ namespace App\Livewire\Bookmarks;
 
 use App\Models\Bookmark;
 use App\Models\BookmarkCategory;
+use App\Services\BookmarkUrlStatusService;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -22,11 +24,15 @@ class SwipeInbox extends Component
 
     private const AI_LABELS_PER_REQUEST = 10;
     private const AI_MODEL = 'gpt-4o-mini';
+    private const URL_STATUS_BATCH = 40;
+    private const URL_STATUS_TTL_HOURS = 12;
+    private const URL_STATUS_TIME_BUDGET_SECONDS = 5;
 
     public function render()
     {
         $this->applyAiLabels();
         $bookmarks = $this->getBookmarks();
+        $this->applyUrlStatuses($bookmarks);
 
         return view('livewire.bookmarks.swipe-inbox', [
             'bookmarks' => $bookmarks,
@@ -177,27 +183,29 @@ class SwipeInbox extends Component
             ->orderBy('updated_at', 'desc');
 
         if ($this->filterDomain) {
-            $normalized = $this->normalizeDomain($this->filterDomain);
-            if ($normalized !== '') {
-                $query->where(function ($inner) use ($normalized) {
-                    $inner->where('url', 'like', "http://{$normalized}/%")
-                        ->orWhere('url', 'like', "https://{$normalized}/%")
-                        ->orWhere('url', 'like', "http://www.{$normalized}/%")
-                        ->orWhere('url', 'like', "https://www.{$normalized}/%");
-                });
+            $needle = Str::lower(trim($this->filterDomain));
+            if ($needle !== '') {
+                $query->whereRaw('LOWER(url) LIKE ?', ['%'.$needle.'%']);
             }
         }
 
         $bookmarks = $query->get();
 
         if ($this->filterDomain) {
-            $normalized = $this->normalizeDomain($this->filterDomain);
-            if ($normalized === '') {
+            $needle = Str::lower(trim($this->filterDomain));
+            if ($needle === '') {
                 return $bookmarks;
             }
 
-            return $bookmarks->filter(function (Bookmark $bookmark) use ($normalized) {
-                return $this->normalizeDomain($bookmark->url) === $normalized;
+            return $bookmarks->filter(function (Bookmark $bookmark) use ($needle) {
+                $url = Str::lower($bookmark->url);
+                if (Str::contains($url, $needle)) {
+                    return true;
+                }
+
+                $domain = $this->normalizeDomain($bookmark->url);
+
+                return $domain === $needle || Str::endsWith($domain, '.'.$needle);
             })->values();
         }
 
@@ -324,6 +332,31 @@ class SwipeInbox extends Component
         }
 
         $this->aiLabelStatus = __('AI labels updated.');
+    }
+
+    private function applyUrlStatuses(Collection $bookmarks): void
+    {
+        $service = app(BookmarkUrlStatusService::class);
+        $cutoff = CarbonImmutable::now()->subHours(self::URL_STATUS_TTL_HOURS);
+        $startedAt = microtime(true);
+
+        $targets = $bookmarks->filter(function (Bookmark $bookmark) use ($cutoff) {
+            if ($bookmark->url_checked_at === null) {
+                return true;
+            }
+
+            return $bookmark->url_checked_at->lt($cutoff);
+        })->take(self::URL_STATUS_BATCH);
+
+        foreach ($targets as $bookmark) {
+            if ((microtime(true) - $startedAt) > self::URL_STATUS_TIME_BUDGET_SECONDS) {
+                break;
+            }
+
+            $updated = $service->checkAndUpdate($bookmark);
+            $bookmark->url_status = $updated->url_status;
+            $bookmark->url_checked_at = $updated->url_checked_at;
+        }
     }
 
     public function regenerateAiLabels(): void
