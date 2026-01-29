@@ -6,6 +6,7 @@ use App\Models\Bookmark;
 use App\Models\BookmarkCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use OpenAI;
 use OpenAI\Client;
@@ -16,6 +17,7 @@ class SwipeInbox extends Component
     public array $selectedCategories = [];
     public ?string $bulkDomain = null;
     public ?int $bulkCategoryId = null;
+    public ?string $filterDomain = null;
     public ?string $aiLabelStatus = null;
 
     private const AI_LABELS_PER_REQUEST = 10;
@@ -170,10 +172,36 @@ class SwipeInbox extends Component
 
     private function getBookmarks(): Collection
     {
-        return Bookmark::where('user_id', auth()->id())
+        $query = Bookmark::where('user_id', auth()->id())
             ->where('status', Bookmark::STATUS_NEW)
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc');
+
+        if ($this->filterDomain) {
+            $normalized = $this->normalizeDomain($this->filterDomain);
+            if ($normalized !== '') {
+                $query->where(function ($inner) use ($normalized) {
+                    $inner->where('url', 'like', "http://{$normalized}/%")
+                        ->orWhere('url', 'like', "https://{$normalized}/%")
+                        ->orWhere('url', 'like', "http://www.{$normalized}/%")
+                        ->orWhere('url', 'like', "https://www.{$normalized}/%");
+                });
+            }
+        }
+
+        $bookmarks = $query->get();
+
+        if ($this->filterDomain) {
+            $normalized = $this->normalizeDomain($this->filterDomain);
+            if ($normalized === '') {
+                return $bookmarks;
+            }
+
+            return $bookmarks->filter(function (Bookmark $bookmark) use ($normalized) {
+                return $this->normalizeDomain($bookmark->url) === $normalized;
+            })->values();
+        }
+
+        return $bookmarks;
     }
 
     public function getDomainOptionsProperty(): array
@@ -215,12 +243,17 @@ class SwipeInbox extends Component
 
     private function normalizeDomain(string $url): string
     {
+        $url = trim($url);
+        if (! preg_match('/^https?:\/\//i', $url)) {
+            $url = 'https://'.$url;
+        }
+
         $host = parse_url($url, PHP_URL_HOST);
         if ($host === null) {
             $host = $url;
         }
 
-        return strtolower(preg_replace('/^www\./', '', $host));
+        return Str::lower(preg_replace('/^www\./', '', $host));
     }
 
     private function newBookmarksCursor()

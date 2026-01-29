@@ -24,6 +24,17 @@
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            <label class="flex items-center gap-2 text-sm text-neutral-500">
+                <span>{{ __('Filter') }}</span>
+                <select class="select select-bordered select-sm" wire:model="filterDomain" @pointerdown.stop>
+                    <option value="">{{ __('All domains') }}</option>
+                    @foreach ($this->domainOptions as $option)
+                        <option value="{{ $option['domain'] }}">
+                            {{ $option['domain'] }} ({{ $option['count'] }})
+                        </option>
+                    @endforeach
+                </select>
+            </label>
             <button
                 type="button"
                 class="btn btn-primary"

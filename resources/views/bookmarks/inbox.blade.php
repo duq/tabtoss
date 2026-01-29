@@ -21,4 +21,20 @@
 
         <livewire:bookmarks.swipe-inbox />
     </div>
+
+    <button
+        type="button"
+        class="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg transition hover:bg-primary-700"
+        x-data="{ visible: false }"
+        x-init="window.addEventListener('scroll', () => { visible = window.scrollY > 200; })"
+        x-show="visible"
+        x-transition.opacity
+        x-cloak
+        @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        aria-label="{{ __('Scroll to top') }}"
+    >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
+            <path d="M12 5l-7 7h4v7h6v-7h4z" fill="currentColor"></path>
+        </svg>
+    </button>
 </x-layouts.app>
