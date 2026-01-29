@@ -171,7 +171,7 @@ class SwipeInbox extends Component
     private function getBookmarks(): Collection
     {
         return Bookmark::where('user_id', auth()->id())
-            ->where('status', '!=', Bookmark::STATUS_DELETED)
+            ->where('status', Bookmark::STATUS_NEW)
             ->orderBy('updated_at', 'desc')
             ->get();
     }
