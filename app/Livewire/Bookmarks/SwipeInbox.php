@@ -103,6 +103,8 @@ class SwipeInbox extends Component
         $bookmark->status = Bookmark::STATUS_DELETED;
         $bookmark->category_id = null;
         $bookmark->save();
+        $this->dispatch('bookmark-deleted', id: $bookmarkId);
+        $this->dispatch('$refresh');
     }
 
     public function assignCategory(int $bookmarkId, int $categoryId): void
@@ -123,6 +125,7 @@ class SwipeInbox extends Component
         $bookmark->category_id = $category->id;
         $bookmark->status = Bookmark::STATUS_KEPT;
         $bookmark->save();
+        $this->dispatch('$refresh');
     }
 
     public function categorize(int $bookmarkId): void

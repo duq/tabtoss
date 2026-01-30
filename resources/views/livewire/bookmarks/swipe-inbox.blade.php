@@ -10,6 +10,7 @@
     x-data="bookmarkInbox(@js([
         'manageCategoriesUrl' => route('filament.dashboard.resources.bookmark-categories.index'),
     ]))"
+    x-on:bookmark-deleted.window="handleBookmarkDeleted($event.detail?.id)"
 >
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -72,6 +73,14 @@
             <span x-text="importStatus"></span>
         </div>
     </template>
+    <div
+        class="fixed left-1/2 top-6 z-50 w-full max-w-sm -translate-x-1/2 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-center text-sm font-medium text-neutral-800 shadow-lg"
+        x-show="showToast"
+        x-transition.opacity
+        x-cloak
+    >
+        <span x-text="toastMessage"></span>
+    </div>
     @if ($aiLabelStatus)
         <div class="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
             {{ $aiLabelStatus }}
@@ -130,7 +139,10 @@
                 @foreach ($bookmarks as $bookmark)
                     <div
                         class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition"
+                        wire:key="bookmark-{{ $bookmark->id }}"
                         :style="draggingId === {{ $bookmark->id }} ? dragStyle : ''"
+                        x-show="!hiddenIds.includes({{ $bookmark->id }})"
+                        x-transition.opacity
                         @pointerdown="startDrag($event, {{ $bookmark->id }})"
                         @pointerup="endDrag({{ $bookmark->id }})"
                         @pointercancel="cancelDrag()"
@@ -278,6 +290,10 @@
         return {
             manageCategoriesUrl,
             importStatus: null,
+            hiddenIds: [],
+            toastMessage: '',
+            showToast: false,
+            toastTimeout: null,
             showCategoryPicker: false,
             pendingBookmarkId: null,
             draggingId: null,
@@ -285,6 +301,25 @@
             dragStartY: 0,
             dragDeltaX: 0,
             threshold: 90,
+            showToastMessage(message) {
+                this.toastMessage = message;
+                this.showToast = true;
+                if (this.toastTimeout) {
+                    clearTimeout(this.toastTimeout);
+                }
+                this.toastTimeout = setTimeout(() => {
+                    this.showToast = false;
+                }, 3000);
+            },
+            handleBookmarkDeleted(id) {
+                if (! id) {
+                    return;
+                }
+                if (! this.hiddenIds.includes(id)) {
+                    this.hiddenIds.push(id);
+                }
+                this.showToastMessage('{{ __('Bookmark deleted') }}');
+            },
 
             async handleFile(event) {
                 const file = event.target.files[0];
