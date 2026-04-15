@@ -25,8 +25,6 @@ class SwipeInbox extends Component
 
     public ?int $bulkCategoryId = null;
 
-    public ?string $filterDomain = null;
-
     public ?string $aiLabelStatus = null;
 
     private const AI_LABELS_PER_REQUEST = 10;
@@ -240,39 +238,11 @@ class SwipeInbox extends Component
 
     private function getBookmarks(): Collection
     {
-        $query = Bookmark::where('user_id', auth()->id())
+        return Bookmark::where('user_id', auth()->id())
             ->where('status', Bookmark::STATUS_NEW)
             ->orderBy('updated_at', 'desc')
-            ->limit(200);
-
-        if ($this->filterDomain) {
-            $needle = Str::lower(trim($this->filterDomain));
-            if ($needle !== '') {
-                $query->whereRaw('LOWER(url) LIKE ?', ['%'.$needle.'%']);
-            }
-        }
-
-        $bookmarks = $query->get();
-
-        if ($this->filterDomain) {
-            $needle = Str::lower(trim($this->filterDomain));
-            if ($needle === '') {
-                return $bookmarks;
-            }
-
-            return $bookmarks->filter(function (Bookmark $bookmark) use ($needle) {
-                $url = Str::lower($bookmark->url);
-                if (Str::contains($url, $needle)) {
-                    return true;
-                }
-
-                $domain = $this->normalizeDomain($bookmark->url);
-
-                return $domain === $needle || Str::endsWith($domain, '.'.$needle);
-            })->values();
-        }
-
-        return $bookmarks;
+            ->limit(200)
+            ->get();
     }
 
     public function getDomainOptionsProperty(): array
@@ -332,11 +302,12 @@ class SwipeInbox extends Component
         return in_array($status, [0, 404, 500], true);
     }
 
-    private function newBookmarksCursor()
+    private function newBookmarksCursor(array $columns = ['*'])
     {
         return Bookmark::where('user_id', auth()->id())
             ->where('status', Bookmark::STATUS_NEW)
-            ->select(['id', 'url'])
+            ->orderBy('updated_at', 'desc')
+            ->select($columns)
             ->cursor();
     }
 

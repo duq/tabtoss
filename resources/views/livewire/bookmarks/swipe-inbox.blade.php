@@ -31,7 +31,7 @@
                     type="text"
                     class="input input-bordered input-lg w-full"
                     placeholder="{{ __('Search by domain (e.g. youtube.com)') }}"
-                    wire:model.live="filterDomain"
+                    x-model.live="searchQuery"
                     @pointerdown.stop
                 />
             </div>
@@ -189,7 +189,7 @@
                         class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition"
                         wire:key="bookmark-{{ $bookmark->id }}"
                         :style="draggingId === {{ $bookmark->id }} ? dragStyle : ''"
-                        x-show="!hiddenIds.includes({{ $bookmark->id }})"
+                        x-show="isBookmarkVisible({{ $bookmark->id }}, @js($bookmark->url))"
                         x-transition.opacity
                         @pointerdown="startDrag($event, {{ $bookmark->id }})"
                         @pointerup="endDrag({{ $bookmark->id }})"
@@ -348,6 +348,7 @@
         return {
             manageCategoriesUrl,
             importStatus: null,
+            searchQuery: '',
             hiddenIds: [],
             toastMessage: '',
             showToast: false,
@@ -385,6 +386,48 @@
                         ? '{{ __('Bookmark deleted') }}'
                         : `${ids.length} {{ __('bookmarks deleted') }}`
                 );
+            },
+
+            normalizeDomain(value) {
+                const trimmedValue = (value ?? '').trim().toLowerCase();
+                if (! trimmedValue) {
+                    return '';
+                }
+
+                try {
+                    const candidate = /^https?:\/\//i.test(trimmedValue) ? trimmedValue : `https://${trimmedValue}`;
+
+                    return new URL(candidate).hostname.replace(/^www\./, '');
+                } catch (error) {
+                    return trimmedValue
+                        .replace(/^https?:\/\//i, '')
+                        .replace(/^www\./, '')
+                        .split('/')[0];
+                }
+            },
+
+            matchesSearch(url) {
+                const query = this.normalizeDomain(this.searchQuery);
+                if (! query) {
+                    return true;
+                }
+
+                const normalizedUrl = (url ?? '').toLowerCase();
+                if (normalizedUrl.includes(query)) {
+                    return true;
+                }
+
+                const domain = this.normalizeDomain(url);
+
+                return domain === query || domain.endsWith(`.${query}`);
+            },
+
+            isBookmarkVisible(id, url) {
+                if (this.hiddenIds.includes(id)) {
+                    return false;
+                }
+
+                return this.matchesSearch(url);
             },
 
             async handleFile(event) {

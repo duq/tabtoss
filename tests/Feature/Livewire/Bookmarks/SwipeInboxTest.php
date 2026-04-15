@@ -137,4 +137,5 @@ class SwipeInboxTest extends FeatureTest
             'status' => Bookmark::STATUS_NEW,
         ]);
     }
+
 }

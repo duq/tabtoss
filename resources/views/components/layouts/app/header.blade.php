@@ -20,6 +20,8 @@
             </x-nav>
         </div>
         <div class="navbar-end">
+            <x-layouts.app.theme-toggle class="mr-2" />
+
             @auth
                 <x-layouts.app.user-menu></x-layouts.app.user-menu>
             @else

@@ -4,6 +4,83 @@ import intersect from '@alpinejs/intersect'
 // plugins have to be imported before Alpine is started
 Alpine.plugin(intersect)
 
+const themeStorageKey = 'theme'
+
+function readStoredTheme() {
+    try {
+        return window.localStorage.getItem(themeStorageKey)
+    } catch (error) {
+        return null
+    }
+}
+
+function writeStoredTheme(theme) {
+    try {
+        window.localStorage.setItem(themeStorageKey, theme)
+    } catch (error) {
+        // Ignore storage failures in private browsing or locked-down environments.
+    }
+}
+
+function resolveTheme(theme) {
+    if (theme === 'dark' || theme === 'light') {
+        return theme
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function applyTheme(theme, persist = false) {
+    const resolvedTheme = resolveTheme(theme)
+    const root = document.documentElement
+
+    root.classList.toggle('dark', resolvedTheme === 'dark')
+    root.setAttribute('data-theme', resolvedTheme)
+    root.style.colorScheme = resolvedTheme
+
+    if (persist) {
+        writeStoredTheme(resolvedTheme)
+    }
+
+    window.dispatchEvent(new CustomEvent('theme-changed', {
+        detail: {
+            theme: resolvedTheme,
+        },
+    }))
+
+    return resolvedTheme
+}
+
+window.applyThemePreference = (theme) => applyTheme(theme, true)
+window.toggleTheme = () => applyTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark', true)
+window.themeToggle = () => ({
+    isDark: document.documentElement.classList.contains('dark'),
+    init() {
+        this.syncTheme()
+        window.addEventListener('theme-changed', () => {
+            this.syncTheme()
+        })
+    },
+    syncTheme() {
+        this.isDark = document.documentElement.classList.contains('dark')
+    },
+    toggleTheme() {
+        window.toggleTheme()
+    },
+})
+
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)')
+
+if (prefersDarkScheme.addEventListener) {
+    prefersDarkScheme.addEventListener('change', () => {
+        if (! readStoredTheme()) {
+            applyTheme(null)
+        }
+    })
+}
+
+applyTheme(readStoredTheme())
+
 document.addEventListener('DOMContentLoaded', function () {
     assignTabSliderEvents();
 });
@@ -68,3 +145,5 @@ function assignTabSliderEvents() {
     })
 
 }
+
+window.Alpine = Alpine

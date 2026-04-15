@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('components.layouts.partials.head')
 </head>
-<body class="text-primary-900">
+<body class="bg-white text-primary-900 dark:bg-slate-950 dark:text-slate-100">
     <div id="app">
 
         <div class="w-full">
@@ -16,7 +16,8 @@
                  <div class="md:basis-3/5 flex flex-col">
                      <div class="hidden md:block">
                          <a href="{{route('home')}}">
-                            <img src="{{asset(config('app.logo.dark') )}}" class="inline-block h-6 m-6" alt="Logo" />
+                            <img src="{{asset(config('app.logo.dark') )}}" class="inline-block h-6 m-6 dark:hidden" alt="Logo" />
+                            <img src="{{asset(config('app.logo.light') )}}" class="hidden h-6 m-6 dark:inline-block" alt="Logo" />
                          </a>
                      </div>
 
@@ -26,11 +27,13 @@
                     <div class="flex justify-between md:justify-end">
                         <div class="md:hidden">
                             <a href="{{route('home')}}">
-                                <img src="{{asset(config('app.logo.dark') )}}" class="inline-block h-6 m-6" alt="Logo" />
+                                <img src="{{asset(config('app.logo.dark') )}}" class="inline-block h-6 m-6 dark:hidden" alt="Logo" />
+                                <img src="{{asset(config('app.logo.light') )}}" class="hidden h-6 m-6 dark:inline-block" alt="Logo" />
                             </a>
                         </div>
 
-                        <div class="self-end text-primary-200 m-4 text-xs">
+                        <div class="self-end m-4 flex items-center gap-3 text-xs text-primary-200">
+                            <x-layouts.app.theme-toggle class="shrink-0" />
                             <x-link href="{{route('home')}}" class="flex items-center text-primary-100">{{__('< back home')}}</x-link>
                         </div>
                     </div>
