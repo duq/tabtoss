@@ -5,8 +5,8 @@ namespace Tests\Feature\Livewire\Bookmarks;
 use App\Livewire\Bookmarks\SwipeInbox;
 use App\Models\Bookmark;
 use App\Models\BookmarkCategory;
-use Tests\Feature\FeatureTest;
 use Livewire\Livewire;
+use Tests\Feature\FeatureTest;
 
 class SwipeInboxTest extends FeatureTest
 {
@@ -83,6 +83,58 @@ class SwipeInboxTest extends FeatureTest
             'id' => $bookmark->id,
             'status' => Bookmark::STATUS_KEPT,
             'category_id' => $category->id,
+        ]);
+    }
+
+    public function test_select_all_down_bookmarks_can_be_deleted_in_bulk(): void
+    {
+        $user = $this->createUser();
+        $this->actingAs($user);
+
+        $downBookmarkOne = Bookmark::create([
+            'user_id' => $user->id,
+            'title' => 'Down One',
+            'url' => 'https://down-one.example.com',
+            'url_hash' => hash('sha256', 'https://down-one.example.com'),
+            'status' => Bookmark::STATUS_NEW,
+            'url_status' => 404,
+        ]);
+
+        $downBookmarkTwo = Bookmark::create([
+            'user_id' => $user->id,
+            'title' => 'Down Two',
+            'url' => 'https://down-two.example.com',
+            'url_hash' => hash('sha256', 'https://down-two.example.com'),
+            'status' => Bookmark::STATUS_NEW,
+            'url_status' => 500,
+        ]);
+
+        $liveBookmark = Bookmark::create([
+            'user_id' => $user->id,
+            'title' => 'Live',
+            'url' => 'https://live.example.com',
+            'url_hash' => hash('sha256', 'https://live.example.com'),
+            'status' => Bookmark::STATUS_NEW,
+            'url_status' => 200,
+        ]);
+
+        Livewire::test(SwipeInbox::class)
+            ->call('selectAllDownBookmarks')
+            ->call('deleteSelectedBookmarks');
+
+        $this->assertDatabaseHas('bookmarks', [
+            'id' => $downBookmarkOne->id,
+            'status' => Bookmark::STATUS_DELETED,
+        ]);
+
+        $this->assertDatabaseHas('bookmarks', [
+            'id' => $downBookmarkTwo->id,
+            'status' => Bookmark::STATUS_DELETED,
+        ]);
+
+        $this->assertDatabaseHas('bookmarks', [
+            'id' => $liveBookmark->id,
+            'status' => Bookmark::STATUS_NEW,
         ]);
     }
 }

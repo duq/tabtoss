@@ -16,30 +16,47 @@ use OpenAI\Client;
 class SwipeInbox extends Component
 {
     public int $stackSize = 15;
+
     public array $selectedCategories = [];
+
+    public array $selectedBookmarkIds = [];
+
     public ?string $bulkDomain = null;
+
     public ?int $bulkCategoryId = null;
+
     public ?string $filterDomain = null;
+
     public ?string $aiLabelStatus = null;
 
     private const AI_LABELS_PER_REQUEST = 10;
+
     private const AI_MODEL = 'gpt-4o-mini';
+
     private const URL_STATUS_BATCH = 40;
+
     private const URL_STATUS_TTL_HOURS = 12;
+
     private const URL_STATUS_TIME_BUDGET_SECONDS = 5;
 
     public function render()
     {
-        $this->applyAiLabels();
         $bookmarks = $this->getBookmarks();
-        $this->applyUrlStatuses($bookmarks);
+        $this->syncSelectedBookmarkIds($bookmarks);
 
         return view('livewire.bookmarks.swipe-inbox', [
             'bookmarks' => $bookmarks,
             'bookmarksCount' => $bookmarks->count(),
+            'downBookmarksCount' => $bookmarks->filter(fn (Bookmark $bookmark) => $this->isDownStatus($bookmark->url_status))->count(),
+            'selectedBookmarksCount' => count($this->selectedBookmarkIds),
             'importedCount' => Bookmark::where('user_id', auth()->id())->count(),
             'categories' => $this->getCategories(),
         ]);
+    }
+
+    public function applyAiLabelsManual(): void
+    {
+        $this->applyAiLabels();
     }
 
     public function importBookmarks(array $items): int
@@ -103,6 +120,7 @@ class SwipeInbox extends Component
         $bookmark->status = Bookmark::STATUS_DELETED;
         $bookmark->category_id = null;
         $bookmark->save();
+        $this->removeSelectedBookmarkId($bookmarkId);
         $this->dispatch('bookmark-deleted', id: $bookmarkId);
         $this->dispatch('$refresh');
     }
@@ -125,6 +143,7 @@ class SwipeInbox extends Component
         $bookmark->category_id = $category->id;
         $bookmark->status = Bookmark::STATUS_KEPT;
         $bookmark->save();
+        $this->removeSelectedBookmarkId($bookmarkId);
         $this->dispatch('$refresh');
     }
 
@@ -164,6 +183,46 @@ class SwipeInbox extends Component
         });
     }
 
+    public function selectAllDownBookmarks(): void
+    {
+        $this->selectedBookmarkIds = $this->getBookmarks()
+            ->filter(fn (Bookmark $bookmark) => $this->isDownStatus($bookmark->url_status))
+            ->pluck('id')
+            ->map(fn (int $id) => $id)
+            ->values()
+            ->all();
+    }
+
+    public function clearSelectedBookmarks(): void
+    {
+        $this->selectedBookmarkIds = [];
+    }
+
+    public function deleteSelectedBookmarks(): void
+    {
+        $bookmarkIds = collect($this->selectedBookmarkIds)
+            ->map(fn ($bookmarkId) => (int) $bookmarkId)
+            ->filter()
+            ->values()
+            ->all();
+
+        if ($bookmarkIds === []) {
+            return;
+        }
+
+        Bookmark::where('user_id', auth()->id())
+            ->where('status', Bookmark::STATUS_NEW)
+            ->whereIn('id', $bookmarkIds)
+            ->update([
+                'status' => Bookmark::STATUS_DELETED,
+                'category_id' => null,
+            ]);
+
+        $this->selectedBookmarkIds = [];
+        $this->dispatch('bookmarks-deleted', ids: $bookmarkIds);
+        $this->dispatch('$refresh');
+    }
+
     public function fetchBookmarks(): array
     {
         return $this->getBookmarks()
@@ -183,7 +242,8 @@ class SwipeInbox extends Component
     {
         $query = Bookmark::where('user_id', auth()->id())
             ->where('status', Bookmark::STATUS_NEW)
-            ->orderBy('updated_at', 'desc');
+            ->orderBy('updated_at', 'desc')
+            ->limit(200);
 
         if ($this->filterDomain) {
             $needle = Str::lower(trim($this->filterDomain));
@@ -267,6 +327,11 @@ class SwipeInbox extends Component
         return Str::lower(preg_replace('/^www\./', '', $host));
     }
 
+    private function isDownStatus(?int $status): bool
+    {
+        return in_array($status, [0, 404, 500], true);
+    }
+
     private function newBookmarksCursor()
     {
         return Bookmark::where('user_id', auth()->id())
@@ -296,17 +361,40 @@ class SwipeInbox extends Component
         }
     }
 
+    private function syncSelectedBookmarkIds(Collection $bookmarks): void
+    {
+        $visibleIds = $bookmarks->pluck('id');
+
+        $this->selectedBookmarkIds = collect($this->selectedBookmarkIds)
+            ->map(fn ($bookmarkId) => (int) $bookmarkId)
+            ->filter()
+            ->intersect($visibleIds)
+            ->values()
+            ->all();
+    }
+
+    private function removeSelectedBookmarkId(int $bookmarkId): void
+    {
+        $this->selectedBookmarkIds = collect($this->selectedBookmarkIds)
+            ->map(fn ($selectedId) => (int) $selectedId)
+            ->reject(fn (int $selectedId) => $selectedId === $bookmarkId)
+            ->values()
+            ->all();
+    }
+
     private function applyAiLabels(): void
     {
         $apiKey = config('services.openai.key');
         if (! $apiKey) {
             $this->aiLabelStatus = __('OpenAI API key is not configured.');
+
             return;
         }
 
         $categories = $this->getCategories();
         if ($categories->isEmpty()) {
             $this->aiLabelStatus = __('No categories found for labeling.');
+
             return;
         }
 
@@ -318,6 +406,7 @@ class SwipeInbox extends Component
 
         if ($bookmarks->isEmpty()) {
             $this->aiLabelStatus = __('No bookmarks need AI labels.');
+
             return;
         }
 
@@ -371,6 +460,12 @@ class SwipeInbox extends Component
             ]);
 
         $this->applyAiLabels();
+    }
+
+    public function checkUrlStatuses(): void
+    {
+        $bookmarks = $this->getBookmarks();
+        $this->applyUrlStatuses($bookmarks);
     }
 
     private function generateAiLabel(Client $client, Bookmark $bookmark, array $categories): ?string

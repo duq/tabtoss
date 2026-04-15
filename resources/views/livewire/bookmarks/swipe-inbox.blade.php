@@ -10,7 +10,8 @@
     x-data="bookmarkInbox(@js([
         'manageCategoriesUrl' => route('filament.dashboard.resources.bookmark-categories.index'),
     ]))"
-    x-on:bookmark-deleted.window="handleBookmarkDeleted($event.detail?.id)"
+    x-on:bookmark-deleted.window="handleBookmarksDeleted($event.detail?.id ? [$event.detail.id] : [])"
+    x-on:bookmarks-deleted.window="handleBookmarksDeleted($event.detail?.ids ?? [])"
 >
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -44,10 +45,18 @@
             <button
                 type="button"
                 class="btn btn-outline"
-                wire:click="regenerateAiLabels"
+                wire:click="applyAiLabelsManual"
                 @pointerdown.stop
             >
-                {{ __('Regenerate labels') }}
+                {{ __('Generate AI labels') }}
+            </button>
+            <button
+                type="button"
+                class="btn btn-outline"
+                wire:click="checkUrlStatuses"
+                @pointerdown.stop
+            >
+                {{ __('Check URL Status') }}
             </button>
             <a class="btn btn-ghost" href="{{ route('bookmarks.index') }}">
                 {{ __('View Dashboard') }}
@@ -86,6 +95,45 @@
             {{ $aiLabelStatus }}
         </div>
     @endif
+
+    <div class="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h4 class="text-sm font-semibold text-neutral-700">{{ __('Bulk cleanup') }}</h4>
+        <p class="mt-2 text-sm text-neutral-500">
+            {{ __('Select all down websites in the current view, then delete them in one action.') }}
+        </p>
+        <div class="mt-3 flex flex-wrap gap-4 text-sm text-neutral-500">
+            <span>{{ __('Down in current view:') }} {{ $downBookmarksCount }}</span>
+            <span>{{ __('Selected:') }} {{ $selectedBookmarksCount }}</span>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-3">
+            <button
+                type="button"
+                class="btn btn-outline"
+                wire:click="selectAllDownBookmarks"
+                @pointerdown.stop
+            >
+                {{ __('Select all down websites') }}
+            </button>
+            <button
+                type="button"
+                class="btn btn-outline"
+                wire:click="clearSelectedBookmarks"
+                @pointerdown.stop
+                @disabled($selectedBookmarksCount === 0)
+            >
+                {{ __('Clear selection') }}
+            </button>
+            <button
+                type="button"
+                class="btn btn-error"
+                wire:click="deleteSelectedBookmarks"
+                @pointerdown.stop
+                @disabled($selectedBookmarksCount === 0)
+            >
+                {{ __('Delete selected') }}
+            </button>
+        </div>
+    </div>
 
     <div class="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h4 class="text-sm font-semibold text-neutral-700">{{ __('Bulk categorize') }}</h4>
@@ -192,6 +240,16 @@
                                 @endif
                             </div>
                             <div class="flex w-full flex-col gap-3 sm:w-56">
+                                <label class="inline-flex items-center gap-2 text-xs text-neutral-400">
+                                    <input
+                                        type="checkbox"
+                                        class="checkbox checkbox-sm"
+                                        value="{{ $bookmark->id }}"
+                                        wire:model.live="selectedBookmarkIds"
+                                        @pointerdown.stop
+                                    />
+                                    <span>{{ __('Select') }}</span>
+                                </label>
                                 <span class="text-xs text-neutral-400">{{ __('Category') }}</span>
                                 <select
                                     class="select select-bordered w-full"
@@ -311,14 +369,22 @@
                     this.showToast = false;
                 }, 3000);
             },
-            handleBookmarkDeleted(id) {
-                if (! id) {
+            handleBookmarksDeleted(ids) {
+                if (! Array.isArray(ids) || ids.length === 0) {
                     return;
                 }
-                if (! this.hiddenIds.includes(id)) {
-                    this.hiddenIds.push(id);
-                }
-                this.showToastMessage('{{ __('Bookmark deleted') }}');
+
+                ids.forEach((id) => {
+                    if (! this.hiddenIds.includes(id)) {
+                        this.hiddenIds.push(id);
+                    }
+                });
+
+                this.showToastMessage(
+                    ids.length === 1
+                        ? '{{ __('Bookmark deleted') }}'
+                        : `${ids.length} {{ __('bookmarks deleted') }}`
+                );
             },
 
             async handleFile(event) {
