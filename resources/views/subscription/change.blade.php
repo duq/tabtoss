@@ -91,7 +91,7 @@
                 </div>
 
                 @if ($isProrated)
-                    <div role="alert" class="alert mt-4 text-sm">
+                    <div role="alert" class="mt-4 flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
                         @svg('info', 'h-6 w-6 text-primary-500 mr-2')
                         <span>
                             {{ __('You will be charged a prorated amount that covers the difference between your current plan and your new plan for the remainder of the current billing period.') }}

@@ -25,10 +25,10 @@
 
 
     <div class="container">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <div class="card-actions justify-center mt-4">
-                    <a class="btn btn-primary btn-sm normal-case" href="{{$successUrl}}">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <div>
+                <div class="mt-4 flex justify-center">
+                    <a class="inline-flex items-center rounded-lg bg-primary-700 px-3 py-2 text-sm font-medium text-white hover:bg-primary-800" href="{{$successUrl}}">
                         {{ __('Back to Subscriptions') }}
                     </a>
                 </div>

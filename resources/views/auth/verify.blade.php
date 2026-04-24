@@ -1,11 +1,11 @@
 <x-layouts.focus>
     <x-slot name="left">
         <div class="flex flex-col py-2 px-4 md:p-0 gap-4 justify-center h-full items-center">
-            <div class="card w-full md:max-w-xl bg-base-100 shadow-xl p-4 md:p-8">
+            <div class="w-full rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm md:max-w-xl md:p-8">
 
 
                 @if (session('sent'))
-                    <div role="alert" class="alert my-4 text-sm">
+                    <div role="alert" class="my-4 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
                         @svg('info', 'h-6 w-6')
                         <span>{{ __('A fresh verification link has been sent to your email address.') }}</span>
                     </div>

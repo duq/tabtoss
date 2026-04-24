@@ -15,7 +15,9 @@
 
             <div class="absolute top-0 right-0 p-2">
                     <span wire:loading>
-                        <span class="loading loading-spinner loading-xs"></span>
+                        <svg class="size-4 animate-spin text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                        </svg>
                     </span>
             </div>
 
@@ -29,7 +31,11 @@
                 <x-auth.social-login>
                     <x-slot name="before">
                         <div class="flex flex-col w-full">
-                            <div class="divider">{{ __('or') }}</div>
+                            <div class="my-2 flex items-center gap-3 text-xs uppercase tracking-wide text-neutral-400">
+                                <span class="h-px flex-1 bg-neutral-200"></span>
+                                <span>{{ __('or') }}</span>
+                                <span class="h-px flex-1 bg-neutral-200"></span>
+                            </div>
                         </div>
                     </x-slot>
                 </x-auth.social-login>

@@ -32,7 +32,9 @@
                 >
                     {{ __('Start Your Free Trial') }}
                     <div wire:loading class="max-w-fit max-h-fit">
-                        <span class="loading loading-ring loading-xs"></span>
+                        <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                        </svg>
                     </div>
                 </x-button-link.primary>
             </div>

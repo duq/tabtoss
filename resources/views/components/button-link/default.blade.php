@@ -1,13 +1,12 @@
 @props(['elementType' => 'a', 'isDisabled' => false])
 
 @php
-    $class = 'inline-block drop-shadow-xl cursor-pointer leading-6 focus:ring-4 focus:outline-none focus:ring-secondary-300 rounded-full text-sm font-medium px-4 py-2 text-center transition hover:scale-103 ';
+    $class = 'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-50';
 @endphp
 
 @if($elementType === 'a')
 <a
     {{ $attributes->merge(['class' => $class]) }}
-    {{ $attributes }}
     {{ $isDisabled ? 'disabled' : '' }}
 >
     {{ $slot }}
@@ -15,7 +14,6 @@
 @else
 <button
     {{ $attributes->merge(['class' => $class]) }}
-    {{ $attributes }}
     {{ $isDisabled ? 'disabled' : '' }}
 >
     {{ $slot }}

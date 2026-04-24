@@ -37,7 +37,7 @@
                     </div>
                 @else
                     <div class="flex flex-row items-center gap-3 mt-6">
-                        <x-input.field wire:model="code" placeholder="{{ __('Discount code') }}" type="text" class="input-sm mx-0! px-0!"
+                        <x-input.field wire:model="code" placeholder="{{ __('Discount code') }}" type="text" class="mx-0! px-0!"
                                value="{{$addedCode ?? ''}}" disabled="{{$isDiscountCodeAdded}}"/>
 
                         <x-button-link.primary-outline wire:click.prevent="add"

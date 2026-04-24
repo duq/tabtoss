@@ -5,8 +5,8 @@
     </x-slot>
 
     <div class="mx-4">
-        <div class="card max-w-3xl bg-base-100 shadow-xl mx-auto text-center">
-            <div class="card-body">
+        <div class="mx-auto max-w-3xl rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-sm">
+            <div>
                 @svg('party', 'w-24 h-24 mx-auto text-primary-500 stroke-primary-500')
                 <x-heading.h3 class="text-primary-900">
                     {{ __('We are thrilled to have you on board!') }}

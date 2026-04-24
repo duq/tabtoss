@@ -6,9 +6,9 @@
 
     @foreach($paymentProviders as $paymentProvider)
         <div class="border-b border-neutral-200 p-4">
-            <div class="form-control">
+            <div>
                 <label class="cursor-pointer text-primary-900 flex justify-between items-center">
-                    <span class="label-text ps-4 flex flex-col gap-3 me-2 text-sm">
+                    <span class="ps-4 flex flex-col gap-3 me-2 text-sm">
                         <span class="text-xl flex flex-row gap-3">
                             <span>
                                 {{ $paymentProvider->getName() }}
@@ -27,7 +27,7 @@
                     </span>
                     <input type="radio"
                            value="{{ $paymentProvider->getSlug() }}"
-                           class="radio checked:bg-white checked:text-primary-500 checked:border-primary-500"
+                           class="size-4 border-neutral-300 text-primary-700 focus:ring-primary-500"
                            name="paymentProvider"
                            wire:model="paymentProvider"
                     />

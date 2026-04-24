@@ -65,7 +65,7 @@
         </div>
     </div>
     <div class="w-full">
-        <a class="btn btn-block bg-primary-500 dark:bg-primary-500 text-white px-6 mt-6 border-0 hover:bg-primary-500/90"
+        <a class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary-700 px-6 py-2 text-sm font-medium text-white hover:bg-primary-800"
            {{$subscription !== null && $subscription->plan_id === $plan->id ? 'disabled' : ''}}
            href="{{ route($buyRoute, ['planSlug' => $plan->slug, 'subscriptionUuid' => $subscription?->uuid]) }}">
             {{__('Buy')}} {{ $plan->product->name }}

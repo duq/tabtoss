@@ -6,13 +6,13 @@
 
         @if(isset($subscription))
             <div class="mx-auto max-w-(--breakpoint-md) text-center mb-8">
-                <h2 class="mb-4 text-xl tracking-tight text-gray-900 dark:text-white">{{ __('You are currently on the') }} <div class="badge badge-primary badge-outline font-bold text-xl p-3">{{ $subscription->plan->product->name  }}</div> {{__('plan.')}}</h2>
+                <h2 class="mb-4 text-xl tracking-tight text-gray-900 dark:text-white">{{ __('You are currently on the') }} <span class="inline-flex rounded-full border border-primary-300 bg-primary-50 px-3 py-1 text-base font-semibold text-primary-700">{{ $subscription->plan->product->name }}</span> {{__('plan.')}}</h2>
             </div>
         @endif
 
-        <div class="plan-switcher tabs tabs-box justify-center w-full bg-neutral-200  mb-4 dark:bg-gray-800 max-w-fit m-auto">
+        <div class="plan-switcher mx-auto mb-4 flex w-fit justify-center rounded-xl border border-neutral-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800">
             @foreach($groupedPlans as $interval => $plans)
-                <a class="tab dark:text-black {{$preselectedInterval == $interval ? 'tab-active': ''}}" data-target="plans-{{$interval}}" aria-selected="{{$preselectedInterval == $interval ? 'true' : 'false'}}">{{str($interval)->title()}}</a>
+                <a class="rounded-lg px-3 py-1.5 text-sm font-medium {{$preselectedInterval == $interval ? 'bg-neutral-900 text-white dark:bg-white dark:text-black' : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-gray-700'}}" data-target="plans-{{$interval}}" aria-selected="{{$preselectedInterval == $interval ? 'true' : 'false'}}">{{str($interval)->title()}}</a>
             @endforeach
         </div>
 

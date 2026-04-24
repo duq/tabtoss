@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5348805b8960fd2d192c07c04d2d7ec1",
+    "content-hash": "88308a400dd314d78acba37efe931ed9",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -8113,6 +8113,86 @@
                 }
             ],
             "time": "2025-08-17T15:08:02+00:00"
+        },
+        {
+            "name": "saasykit/filament-onboarding",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://code.saasykit.com/saasykit/filament-onboarding.git",
+                "reference": "0e73b0c1579a9e5ca7e06410625cf512b0e18e73"
+            },
+            "require": {
+                "filament/filament": "^4.0|^5.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^8.0",
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^3.0",
+                "pestphp/pest-plugin-arch": "^3.0",
+                "pestphp/pest-plugin-laravel": "^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Saasykit\\FilamentOnboarding\\FilamentOnboardingServiceProvider"
+                    ],
+                    "aliases": {
+                        "FilamentOnboarding": "Saasykit\\FilamentOnboarding\\Facades\\FilamentOnboarding"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Saasykit\\FilamentOnboarding\\": "src/",
+                    "Saasykit\\FilamentOnboarding\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Saasykit\\FilamentOnboarding\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "post-autoload-dump": [
+                    "@php ./vendor/bin/testbench package:discover --ansi"
+                ],
+                "test": [
+                    "vendor/bin/pest"
+                ],
+                "test-coverage": [
+                    "vendor/bin/pest --coverage"
+                ],
+                "format": [
+                    "vendor/bin/pint"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ahmad",
+                    "email": "hi@saasykit.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Onboarding flow for FilamentPHP",
+            "homepage": "https://code.saasykit.com/saasykit/filament-onboarding",
+            "keywords": [
+                "filament-onboarding",
+                "laravel",
+                "saasykit"
+            ],
+            "support": {
+                "issues": "https://code.saasykit.com/saasykit/filament-onboarding/issues",
+                "source": "https://code.saasykit.com/saasykit/filament-onboarding"
+            },
+            "time": "2026-01-22T17:38:37+00:00"
         },
         {
             "name": "saasykit/laravel-invoices",

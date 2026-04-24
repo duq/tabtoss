@@ -9,8 +9,8 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class BookmarkUrlStatusService
 {
-    private const REQUEST_TIMEOUT_SECONDS = 2;
-    private const CONNECT_TIMEOUT_SECONDS = 2;
+    private const REQUEST_TIMEOUT_SECONDS = 5;
+    private const CONNECT_TIMEOUT_SECONDS = 3;
     private const STATUS_ERROR = 0;
 
     public function checkAndUpdate(Bookmark $bookmark): Bookmark

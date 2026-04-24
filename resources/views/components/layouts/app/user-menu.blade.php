@@ -1,43 +1,36 @@
-<div class="flex-none gap-2 text-primary-500">
-    <div class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-            <div class="w-8 rounded-full bg-primary-50">
-                <div class="flex flex-row justify-center items-center h-full">
-                    <div class="text-2xl font-bold text-primary-500 capitalize">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="relative flex-none" x-data="{ menuOpen: false }" @click.outside="menuOpen = false">
+    <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-neutral-600 hover:bg-neutral-100"
+        @click="menuOpen = ! menuOpen"
+    >
+        <span class="inline-flex size-8 items-center justify-center rounded-lg bg-primary-700 text-sm font-semibold text-white capitalize">
+            {{ substr(auth()->user()->name, 0, 1) }}
+        </span>
+        <svg viewBox="0 0 24 24" class="size-4 text-neutral-500" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+    </button>
+
+    <div
+        x-show="menuOpen"
+        x-cloak
+        class="absolute right-0 z-30 mt-2 w-56 rounded-xl border border-neutral-200 bg-white p-1 shadow-sm"
+    >
+        @if (auth()->user()->isAdmin())
+            <a href="{{ route('filament.admin.pages.dashboard') }}" class="flex rounded-lg px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+                {{ __('Admin Panel') }}
+            </a>
+        @endif
+        <a href="{{ route('filament.dashboard.pages.dashboard') }}" class="flex rounded-lg px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+            {{ __('Dashboard') }}
+        </a>
+        <div class="my-1 border-t border-neutral-200"></div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <ul tabindex="0" class="mt-3 z-1 py-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                <li class="py-1">
-                    @if (auth()->user()->isAdmin())
-                        <x-link href="{{ route('filament.admin.pages.dashboard') }}" class="px-2!">
-                            <div class="flex flex-row gap-1">
-                                @svg('dashboard', 'h-4 text-primary-500 m-1 stroke-primary-500')
-                                {{ __('Admin Panel') }}
-                            </div>
-                        </x-link>
-                    @endif
-                    <x-link href="{{ route('filament.dashboard.pages.dashboard') }}" class="px-2!">
-                        <div class="flex flex-row gap-1">
-                            @svg('dashboard', 'h-4 text-primary-500 m-1 stroke-primary-500')
-                            {{ __('Dashboard') }}
-                        </div>
-                    </x-link>
-                </li>
-                <li class="">
-                    <x-link href="{{ route('logout') }}" class="px-2!" onclick="event.preventDefault(); this.closest('form').submit();">
-                        <div class="flex flex-row gap-1">
-                            @svg('logout', 'h-4 m-1 stroke-primary-500')
-                            {{ __('Logout') }}
-                        </div>
-                    </x-link>
-                </li>
-            </ul>
+            <button type="submit" class="flex w-full rounded-lg px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100">
+                {{ __('Logout') }}
+            </button>
         </form>
     </div>
 </div>

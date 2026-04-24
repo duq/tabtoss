@@ -1,7 +1,7 @@
-<fieldset class="fieldset">
-    <legend class="fieldset-legend font-medium">{{ __('Email Address') }}</legend>
-    <input type="email" class="input w-full" name="email" required id="email" wire:model.blur="email" value="{{ old('email') }}" />
-</fieldset>
+<div class="space-y-1">
+    <label class="block text-sm font-medium text-neutral-700" for="email">{{ __('Email Address') }}</label>
+    <input type="email" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="email" required id="email" wire:model.blur="email" value="{{ old('email') }}" />
+</div>
 
 @error('email')
 <span class="text-xs text-red-500" role="alert">
@@ -11,10 +11,10 @@
 
 
 @if(!empty($email))
-    <fieldset class="fieldset">
-        <legend class="fieldset-legend font-medium">{{ __('Password') }}</legend>
-        <input type="password" class="input w-full" name="password" required id="password" wire:model="password" />
-    </fieldset>
+    <div class="space-y-1">
+        <label class="block text-sm font-medium text-neutral-700" for="password">{{ __('Password') }}</label>
+        <input type="password" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="password" required id="password" wire:model="password" />
+    </div>
 
     @error('password')
     <span class="text-xs text-red-500 ms-1" role="alert">
@@ -42,10 +42,10 @@
 
 @if(!$userExists || empty($email))
 
-    <fieldset class="fieldset">
-        <legend class="fieldset-legend font-medium">{{ __('Your Name') }}</legend>
-        <input type="text" class="input w-full" name="name" required id="name" wire:model="name" value="{{ old('name') }}" />
-    </fieldset>
+    <div class="space-y-1">
+        <label class="block text-sm font-medium text-neutral-700" for="name">{{ __('Your Name') }}</label>
+        <input type="text" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="name" required id="name" wire:model="name" value="{{ old('name') }}" />
+    </div>
 
     @error('name')
     <span class="text-xs text-red-500" role="alert">

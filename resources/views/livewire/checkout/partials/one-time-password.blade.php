@@ -1,9 +1,9 @@
 {{-- OTP Login Flow --}}
 @if(!$showOtpForm)
-    <fieldset class="fieldset">
-        <legend class="fieldset-legend font-medium">{{ __('Email Address') }}</legend>
-        <input type="email" class="input w-full" name="email" required id="email" wire:model.live.debounce.500ms="email" value="{{ old('email') }}" />
-    </fieldset>
+    <div class="space-y-1">
+        <label class="block text-sm font-medium text-neutral-700" for="email">{{ __('Email Address') }}</label>
+        <input type="email" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="email" required id="email" wire:model.live.debounce.500ms="email" value="{{ old('email') }}" />
+    </div>
 
     @error('email')
     <span class="text-xs text-red-500" role="alert">
@@ -13,10 +13,10 @@
 
     {{-- Show name field if user doesn't exist --}}
     @if(!$userExists)
-        <fieldset class="fieldset">
-            <legend class="fieldset-legend font-medium">{{ __('Your Name') }}</legend>
-            <input type="text" class="input w-full" name="name" required id="name" wire:model="name" value="{{ old('name') }}" />
-        </fieldset>
+        <div class="space-y-1">
+            <label class="block text-sm font-medium text-neutral-700" for="name">{{ __('Your Name') }}</label>
+            <input type="text" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="name" required id="name" wire:model="name" value="{{ old('name') }}" />
+        </div>
 
         @error('name')
         <span class="text-xs text-red-500" role="alert">
@@ -37,7 +37,9 @@
             wire:loading.attr="disabled">
             {{ $userExists ? __('Send Login Code') : __('Create Account & Send Code') }}
             <div wire:loading wire:target="sendOtpCode" class="max-w-fit max-h-fit">
-                <span class="loading loading-ring loading-xs"></span>
+                <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                </svg>
             </div>
         </x-button-link.primary>
     </div>
@@ -49,10 +51,10 @@
     @endif
 
 @elseif($showOtpForm)
-    <fieldset class="fieldset">
-        <legend class="fieldset-legend font-medium">{{ __('Email Address') }}</legend>
-        <input type="email" class="input w-full" name="email" required id="email" wire:model.live.debounce.500ms="email" value="{{ old('email') }}" />
-    </fieldset>
+    <div class="space-y-1">
+        <label class="block text-sm font-medium text-neutral-700" for="email">{{ __('Email Address') }}</label>
+        <input type="email" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="email" required id="email" wire:model.live.debounce.500ms="email" value="{{ old('email') }}" />
+    </div>
 
     @error('email')
     <span class="text-xs text-red-500" role="alert">
@@ -61,10 +63,10 @@
     @enderror
 
     {{-- OTP Input Field --}}
-    <fieldset class="fieldset">
-        <legend class="fieldset-legend font-medium">{{ __('One-time Password') }}</legend>
-        <input type="text" class="input w-full" name="oneTimePassword" required id="oneTimePassword" wire:model.live="oneTimePassword" />
-    </fieldset>
+    <div class="space-y-1">
+        <label class="block text-sm font-medium text-neutral-700" for="oneTimePassword">{{ __('One-time Password') }}</label>
+        <input type="text" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="oneTimePassword" required id="oneTimePassword" wire:model.live="oneTimePassword" />
+    </div>
 
     @error('oneTimePassword')
     <span class="text-xs text-red-500" role="alert">

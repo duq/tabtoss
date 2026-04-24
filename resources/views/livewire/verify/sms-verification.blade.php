@@ -1,7 +1,7 @@
 <div>
     <div class="mx-4">
-        <div class="card max-w-3xl bg-base-100 shadow-xl mx-auto">
-            <div class="card-body">
+        <div class="max-w-3xl rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm mx-auto">
+            <div>
                 @svg('info', 'w-16 h-16 mx-auto text-primary-500 stroke-primary-500')
 
                 <div class="text-center">
@@ -20,12 +20,10 @@
                 <div class="mt-8 mx-auto">
                     <div class="flex flex-col gap-4">
                         <div>
-                            <label class="form-control w-full" for="phone">
-                                <div class="label">
-                                    <span class="label-text">{{ __('Your Mobile Phone Number') }}</span>
-                                </div>
-                                <input type="text" class="input input-bordered input-md w-full" name="phone" required id="phone" wire:model="phone" @disabled($validPhoneNumber)>
+                            <label class="block text-sm font-medium text-neutral-700 mb-1" for="phone">
+                                {{ __('Your Mobile Phone Number') }}
                             </label>
+                            <input type="text" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="phone" required id="phone" wire:model="phone" @disabled($validPhoneNumber)>
 
                             @error('phone')
                                 <span class="text-xs text-red-500" role="alert">
@@ -41,12 +39,10 @@
 
                         @if (!empty($phone) && !$errors->has('phone'))
                             <div>
-                                <label class="form-control w-full" for="code">
-                                    <div class="label">
-                                        <span class="label-text">{{ __('Enter Verification Code') }}</span>
-                                    </div>
-                                    <input type="text" class="input input-bordered input-md w-full" name="code" required id="code" wire:model="code">
+                                <label class="block text-sm font-medium text-neutral-700 mb-1" for="code">
+                                    {{ __('Enter Verification Code') }}
                                 </label>
+                                <input type="text" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" name="code" required id="code" wire:model="code">
 
                                 @error('code')
                                 <span class="text-xs text-red-500" role="alert">
@@ -58,14 +54,18 @@
                             <x-button-link.primary class="flex flex-row items-center justify-center gap-3 min-w-64! disabled:opacity-40" elementType="button" wire:click="verifyCode" wire:loading.attr="disabled">
                                 {{ __('Verify Phone') }}
                                 <div wire:loading class="max-w-fit max-h-fit">
-                                    <span class="loading loading-ring loading-xs"></span>
+                                    <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                                    </svg>
                                 </div>
                             </x-button-link.primary>
                         @else
                             <x-button-link.primary class="flex flex-row items-center justify-center gap-3 min-w-64! disabled:opacity-40" elementType="button" wire:click="sendVerificationCode" wire:loading.attr="disabled">
                                 {{ __('Send Verification Code') }}
                                 <div wire:loading class="max-w-fit max-h-fit">
-                                    <span class="loading loading-ring loading-xs"></span>
+                                    <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                                    </svg>
                                 </div>
                             </x-button-link.primary>
                         @endif

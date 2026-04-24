@@ -5,9 +5,9 @@
             <x-button-link.primary-outline href="{{route('roadmap.suggest')}}">{{ __('+ Suggest a feature') }}</x-button-link.primary-outline>
         </div>
 
-        <div role="tablist" class="tabs tabs-box max-w-fit text-center mx-auto">
-            <a href="{{route('roadmap')}}" role="tab" class="tab {{ request()->get('done', false) ? '' : 'tab-active' }}" aria-selected="{{ request()->get('done', false) ? 'false' : 'true' }}">{{ __('Active') }}</a>
-            <a href="{{route('roadmap', ['done' => true])}}" role="tab" class="tab {{ request()->get('done', false) ? 'tab-active' : '' }}" aria-selected="{{ request()->get('done', false) ? 'true' : 'false' }}">{{ __('Done') }}</a>
+        <div role="tablist" class="mx-auto flex w-fit rounded-xl border border-neutral-200 bg-white p-1 text-center">
+            <a href="{{route('roadmap')}}" role="tab" class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request()->get('done', false) ? 'text-neutral-600 hover:bg-neutral-100' : 'bg-neutral-900 text-white' }}" aria-selected="{{ request()->get('done', false) ? 'false' : 'true' }}">{{ __('Active') }}</a>
+            <a href="{{route('roadmap', ['done' => true])}}" role="tab" class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request()->get('done', false) ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100' }}" aria-selected="{{ request()->get('done', false) ? 'true' : 'false' }}">{{ __('Done') }}</a>
         </div>
 
 

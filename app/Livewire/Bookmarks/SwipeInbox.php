@@ -2,20 +2,26 @@
 
 namespace App\Livewire\Bookmarks;
 
+use App\Jobs\CheckBookmarkUrlStatus;
 use App\Models\Bookmark;
 use App\Models\BookmarkCategory;
-use App\Services\BookmarkUrlStatusService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\WithPagination;
 use OpenAI;
 use OpenAI\Client;
 
 class SwipeInbox extends Component
 {
+    use WithPagination;
+
     public int $stackSize = 15;
+
+    public int $perPage = 200;
 
     public array $selectedCategories = [];
 
@@ -27,25 +33,35 @@ class SwipeInbox extends Component
 
     public ?string $aiLabelStatus = null;
 
+    public bool $confirmingBulkDelete = false;
+
     private const AI_LABELS_PER_REQUEST = 10;
 
     private const AI_MODEL = 'gpt-4o-mini';
 
     private const URL_STATUS_BATCH = 40;
 
-    private const URL_STATUS_TTL_HOURS = 12;
-
-    private const URL_STATUS_TIME_BUDGET_SECONDS = 5;
+    private const URL_STATUS_TTL_DAYS = 30;
 
     public function render()
     {
-        $bookmarks = $this->getBookmarks();
+        $bookmarksPaginator = $this->getBookmarksPaginator();
+        if ($bookmarksPaginator->lastPage() > 0 && $bookmarksPaginator->currentPage() > $bookmarksPaginator->lastPage()) {
+            $this->setPage($bookmarksPaginator->lastPage());
+            $bookmarksPaginator = $this->getBookmarksPaginator();
+        }
+        $bookmarks = $bookmarksPaginator->getCollection();
+
         $this->syncSelectedBookmarkIds($bookmarks);
 
         return view('livewire.bookmarks.swipe-inbox', [
             'bookmarks' => $bookmarks,
-            'bookmarksCount' => $bookmarks->count(),
+            'bookmarksPaginator' => $bookmarksPaginator,
+            'visibleBookmarksCount' => $bookmarks->count(),
+            'bookmarksCount' => $bookmarksPaginator->total(),
             'downBookmarksCount' => $bookmarks->filter(fn (Bookmark $bookmark) => $this->isDownStatus($bookmark->url_status))->count(),
+            'uncheckedBookmarksCount' => $bookmarks->filter(fn (Bookmark $bookmark) => $bookmark->url_status === null)->count(),
+            'aiLabeledBookmarksCount' => $bookmarks->filter(fn (Bookmark $bookmark) => ! empty($bookmark->ai_label))->count(),
             'selectedBookmarksCount' => count($this->selectedBookmarkIds),
             'importedCount' => Bookmark::where('user_id', auth()->id())->count(),
             'categories' => $this->getCategories(),
@@ -91,6 +107,7 @@ class SwipeInbox extends Component
                 'user_id' => $userId,
                 'url_hash' => $urlHash,
             ]);
+            $shouldCheckStatus = ! $bookmark->exists || $bookmark->url_checked_at === null;
 
             $bookmark->url = $data['url'];
             $bookmark->title = $data['title'] ?? $bookmark->title;
@@ -102,6 +119,11 @@ class SwipeInbox extends Component
             }
 
             $bookmark->save();
+
+            if ($shouldCheckStatus) {
+                CheckBookmarkUrlStatus::dispatch($bookmark->id);
+            }
+
             $count++;
         }
 
@@ -183,7 +205,8 @@ class SwipeInbox extends Component
 
     public function selectAllDownBookmarks(): void
     {
-        $this->selectedBookmarkIds = $this->getBookmarks()
+        $this->confirmingBulkDelete = false;
+        $this->selectedBookmarkIds = $this->getCurrentPageBookmarks()
             ->filter(fn (Bookmark $bookmark) => $this->isDownStatus($bookmark->url_status))
             ->pluck('id')
             ->map(fn (int $id) => $id)
@@ -193,10 +216,36 @@ class SwipeInbox extends Component
 
     public function clearSelectedBookmarks(): void
     {
+        $this->confirmingBulkDelete = false;
         $this->selectedBookmarkIds = [];
     }
 
-    public function deleteSelectedBookmarks(): void
+    public function updatedSelectedBookmarkIds(): void
+    {
+        $this->confirmingBulkDelete = false;
+    }
+
+    public function requestDeleteSelectedBookmarks(): void
+    {
+        if (count($this->selectedBookmarkIds) === 0) {
+            return;
+        }
+
+        if (! $this->confirmingBulkDelete) {
+            $this->confirmingBulkDelete = true;
+
+            return;
+        }
+
+        $this->deleteSelectedBookmarks();
+    }
+
+    public function cancelDeleteSelectedBookmarks(): void
+    {
+        $this->confirmingBulkDelete = false;
+    }
+
+    private function deleteSelectedBookmarks(): void
     {
         $bookmarkIds = collect($this->selectedBookmarkIds)
             ->map(fn ($bookmarkId) => (int) $bookmarkId)
@@ -216,6 +265,7 @@ class SwipeInbox extends Component
                 'category_id' => null,
             ]);
 
+        $this->confirmingBulkDelete = false;
         $this->selectedBookmarkIds = [];
         $this->dispatch('bookmarks-deleted', ids: $bookmarkIds);
         $this->dispatch('$refresh');
@@ -223,7 +273,7 @@ class SwipeInbox extends Component
 
     public function fetchBookmarks(): array
     {
-        return $this->getBookmarks()
+        return $this->getCurrentPageBookmarks()
             ->map(function (Bookmark $bookmark) {
                 return [
                     'id' => $bookmark->id,
@@ -236,13 +286,17 @@ class SwipeInbox extends Component
             ->all();
     }
 
-    private function getBookmarks(): Collection
+    private function getBookmarksPaginator(): LengthAwarePaginator
     {
         return Bookmark::where('user_id', auth()->id())
             ->where('status', Bookmark::STATUS_NEW)
             ->orderBy('updated_at', 'desc')
-            ->limit(200)
-            ->get();
+            ->paginate($this->perPage);
+    }
+
+    private function getCurrentPageBookmarks(): Collection
+    {
+        return $this->getBookmarksPaginator()->getCollection();
     }
 
     public function getDomainOptionsProperty(): array
@@ -399,9 +453,7 @@ class SwipeInbox extends Component
 
     private function applyUrlStatuses(Collection $bookmarks): void
     {
-        $service = app(BookmarkUrlStatusService::class);
-        $cutoff = CarbonImmutable::now()->subHours(self::URL_STATUS_TTL_HOURS);
-        $startedAt = microtime(true);
+        $cutoff = CarbonImmutable::now()->subDays(self::URL_STATUS_TTL_DAYS);
 
         $targets = $bookmarks->filter(function (Bookmark $bookmark) use ($cutoff) {
             if ($bookmark->url_checked_at === null) {
@@ -412,13 +464,7 @@ class SwipeInbox extends Component
         })->take(self::URL_STATUS_BATCH);
 
         foreach ($targets as $bookmark) {
-            if ((microtime(true) - $startedAt) > self::URL_STATUS_TIME_BUDGET_SECONDS) {
-                break;
-            }
-
-            $updated = $service->checkAndUpdate($bookmark);
-            $bookmark->url_status = $updated->url_status;
-            $bookmark->url_checked_at = $updated->url_checked_at;
+            CheckBookmarkUrlStatus::dispatch($bookmark->id);
         }
     }
 
@@ -435,7 +481,7 @@ class SwipeInbox extends Component
 
     public function checkUrlStatuses(): void
     {
-        $bookmarks = $this->getBookmarks();
+        $bookmarks = $this->getCurrentPageBookmarks();
         $this->applyUrlStatuses($bookmarks);
     }
 

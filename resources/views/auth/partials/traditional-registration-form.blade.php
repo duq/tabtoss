@@ -61,7 +61,11 @@
     <x-auth.social-login>
         <x-slot name="before">
             <div class="flex flex-col w-full">
-                <div class="divider">{{ __('or') }}</div>
+                <div class="my-2 flex items-center gap-3 text-xs uppercase tracking-wide text-neutral-400">
+                    <span class="h-px flex-1 bg-neutral-200"></span>
+                    <span>{{ __('or') }}</span>
+                    <span class="h-px flex-1 bg-neutral-200"></span>
+                </div>
             </div>
         </x-slot>
     </x-auth.social-login>

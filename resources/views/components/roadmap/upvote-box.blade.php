@@ -10,7 +10,9 @@
                 {{ $item->upvotes ?? 0 }}
             </span>
             <span wire:loading wire:target="removeUpvote({{$item->id}})">
-                <span class="loading loading-ring loading-xs"></span>
+                <svg class="size-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                </svg>
             </span>
         </a>
     </div>
@@ -25,7 +27,9 @@
                     {{ $item->upvotes ?? 0 }}
                 </span>
                 <span wire:loading wire:target="upvote({{$item->id}})">
-                    <span class="loading loading-ring loading-xs"></span>
+                    <svg class="size-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"></path>
+                    </svg>
                 </span>
             </a>
         </div>

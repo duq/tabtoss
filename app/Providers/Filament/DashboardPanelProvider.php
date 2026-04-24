@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Constants\AnnouncementPlacement;
+use App\Filament\Dashboard\Pages\Onboarding;
 use App\Filament\Dashboard\Pages\TwoFactorAuth\TwoFactorAuth;
 use App\Http\Middleware\UpdateUserLastSeenAt;
 use App\Livewire\AddressForm;
@@ -25,6 +26,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
+use Saasykit\FilamentOnboarding\FilamentOnboardingPlugin;
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -34,7 +36,7 @@ class DashboardPanelProvider extends PanelProvider
             ->id('dashboard')
             ->path('dashboard')
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::Blue,
             ])
             ->userMenuItems([
                 Action::make('admin-panel')
@@ -93,6 +95,8 @@ class DashboardPanelProvider extends PanelProvider
                     ->myProfileComponents([
                         AddressForm::class,
                     ]),
+                FilamentOnboardingPlugin::make()
+                    ->onboardingPage(Onboarding::class),
             ]);
     }
 }

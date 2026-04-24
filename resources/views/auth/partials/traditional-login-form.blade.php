@@ -39,7 +39,8 @@
 
     <div class="mt-4 mb-4 flex flex-wrap gap-2 justify-between text-sm">
         <div class="flex gap-2">
-            <input class="checkbox checkbox-sm" type="checkbox" name="remember"
+            <input class="mt-0.5 size-4 rounded border-neutral-300 text-primary-700 focus:ring-primary-500"
+                   type="checkbox" name="remember"
                    id="remember" {{ old('remember') ? 'checked' : '' }}>
 
             <label class="text-sm" for="remember">
@@ -63,7 +64,11 @@
     <x-auth.social-login>
         <x-slot name="before">
             <div class="flex flex-col w-full">
-                <div class="divider">{{ __('or') }}</div>
+                <div class="my-2 flex items-center gap-3 text-xs uppercase tracking-wide text-neutral-400">
+                    <span class="h-px flex-1 bg-neutral-200"></span>
+                    <span>{{ __('or') }}</span>
+                    <span class="h-px flex-1 bg-neutral-200"></span>
+                </div>
             </div>
         </x-slot>
     </x-auth.social-login>

@@ -22,9 +22,22 @@
     $disabled = $disabled ? 'disabled' : '';
 @endphp
 
-<fieldset {{ $attributes->merge(['class' => 'fieldset ' . $maxWidth]) }}>
+<div {{ $attributes->merge(['class' => 'space-y-1 ' . $maxWidth]) }}>
     @if($label)
-        <legend class="fieldset-legend font-medium">{{ $label }}</legend>
+        <label class="block text-sm font-medium text-neutral-700" for="{{$id}}">
+            {{ $label }}
+        </label>
     @endif
-    <input type="{{$type}}" class="input w-full" placeholder="{{$placeholder}}" name="{{$name}}" {{$required}} {{$autofocus}} {!! $value !!} {!! $autocomplete !!} {{$disabled}}  id="{{$id}}" />
-</fieldset>
+    <input
+        type="{{$type}}"
+        class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none"
+        placeholder="{{$placeholder}}"
+        name="{{$name}}"
+        {{$required}}
+        {{$autofocus}}
+        {!! $value !!}
+        {!! $autocomplete !!}
+        {{$disabled}}
+        id="{{$id}}"
+    />
+</div>
