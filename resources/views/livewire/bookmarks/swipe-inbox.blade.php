@@ -5,189 +5,157 @@
     ]))"
     x-on:bookmark-deleted.window="handleBookmarksDeleted($event.detail?.id ? [$event.detail.id] : [])"
     x-on:bookmarks-deleted.window="handleBookmarksDeleted($event.detail?.ids ?? [])"
+    x-on:keydown.window="handleShortcut($event)"
 >
     <div class="rounded-3xl border border-neutral-200 bg-white p-4 sm:p-6">
-        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div class="min-w-0 flex-1">
+        <div class="grid gap-3 lg:grid-cols-4">
+            <div class="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+                <p class="text-sm font-medium text-neutral-700">{{ __('Step 1') }}</p>
+                <p class="text-sm text-neutral-600">{{ __('Import bookmarks') }}</p>
+            </div>
+            <div class="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+                <p class="text-sm font-medium text-neutral-700">{{ __('Step 2') }}</p>
+                <p class="text-sm text-neutral-600">{{ __('Review health status') }}</p>
+            </div>
+            <div class="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+                <p class="text-sm font-medium text-neutral-700">{{ __('Step 3') }}</p>
+                <p class="text-sm text-neutral-600">{{ __('Categorize what you keep') }}</p>
+            </div>
+            <div class="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+                <p class="text-sm font-medium text-neutral-700">{{ __('Step 4') }}</p>
+                <p class="text-sm text-neutral-600">{{ __('Bulk clean low-value links') }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4 rounded-2xl border border-neutral-200 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2 text-sm text-neutral-600">
-                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Imported:') }} {{ $importedCount }} {{ __('bookmarks') }}</span>
-                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Current bookmarks:') }} {{ $bookmarksCount }}</span>
-                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Showing:') }} {{ $visibleBookmarksCount }}</span>
-                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Down:') }} {{ $downBookmarksCount }}</span>
+                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Imported:') }} {{ $importedCount }}</span>
+                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('In inbox:') }} {{ $bookmarksCount }}</span>
+                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Visible:') }} {{ $visibleBookmarksCount }}</span>
+                    <span class="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 tabular-nums text-red-700">{{ __('Down:') }} {{ $downBookmarksCount }}</span>
                     <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 tabular-nums">{{ __('Selected:') }} {{ $selectedBookmarksCount }}</span>
                 </div>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'all' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('all')">
-                        {{ __('All') }} ({{ $visibleBookmarksCount }})
-                    </button>
-                    <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'down' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('down')">
-                        {{ __('Down') }} ({{ $downBookmarksCount }})
-                    </button>
-                    <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'unchecked' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('unchecked')">
-                        {{ __('Unchecked') }} ({{ $uncheckedBookmarksCount }})
-                    </button>
-                    <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'ai-labeled' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('ai-labeled')">
-                        {{ __('AI-labeled') }} ({{ $aiLabeledBookmarksCount }})
-                    </button>
+                <p class="text-sm text-neutral-500">
+                    {{ __('Shortcuts:') }} <kbd class="rounded border border-neutral-300 bg-neutral-50 px-1.5 py-0.5 text-xs">Ctrl/⌘ K</kbd>
+                    <kbd class="rounded border border-neutral-300 bg-neutral-50 px-1.5 py-0.5 text-xs">Shift D</kbd>
+                    <kbd class="rounded border border-neutral-300 bg-neutral-50 px-1.5 py-0.5 text-xs">Shift C</kbd>
+                </p>
+            </div>
+
+            <div class="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+                <div class="space-y-3">
+                    <label class="sr-only" for="bookmark-domain-search">{{ __('Search by domain') }}</label>
+                    <div class="relative">
+                        <svg viewBox="0 0 24 24" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" aria-hidden="true">
+                            <circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                            <path d="m20 20-4.2-4.2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+                        </svg>
+                        <input
+                            type="text"
+                            id="bookmark-domain-search"
+                            name="domain_search"
+                            class="h-10 w-full rounded-xl border border-neutral-300 bg-white pl-10 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none"
+                            placeholder="{{ __('Search domain (example.com)') }}"
+                            x-model.live="searchQuery"
+                            x-ref="domainSearchInput"
+                            @pointerdown.stop
+                        />
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'all' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('all')">
+                            {{ __('All') }} ({{ $visibleBookmarksCount }})
+                        </button>
+                        <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'down' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('down')">
+                            {{ __('Needs attention') }} ({{ $downBookmarksCount }})
+                        </button>
+                        <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'unchecked' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('unchecked')">
+                            {{ __('Unchecked') }} ({{ $uncheckedBookmarksCount }})
+                        </button>
+                        <button type="button" class="rounded-full border px-3 py-1 text-sm font-medium tabular-nums" :class="activeFilter === 'ai-labeled' ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white text-neutral-700'" @click="setFilter('ai-labeled')">
+                            {{ __('AI-labeled') }} ({{ $aiLabeledBookmarksCount }})
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" class="inline-flex items-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900" @click="$refs.fileInput.click()">
+                            {{ __('Import') }}
+                        </button>
+                        <button type="button" class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700" wire:click="applyAiLabelsManual" @pointerdown.stop>
+                            {{ __('Suggest categories') }}
+                        </button>
+                        <button type="button" class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700" wire:click="checkUrlStatuses" @pointerdown.stop>
+                            {{ __('Refresh URL checks') }}
+                        </button>
+                        <a class="inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100" href="{{ route('bookmarks.index') }}">
+                            {{ __('Dashboard') }}
+                        </a>
+                        <a class="inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100" :href="manageCategoriesUrl">
+                            {{ __('Manage categories') }}
+                        </a>
+                    </div>
                 </div>
 
-                <div class="mt-4 grid gap-3 lg:grid-cols-3 lg:items-start">
-                    <div class="min-w-0 rounded-2xl border border-neutral-200 p-4">
-                        <label class="mb-2 block text-sm font-semibold text-neutral-800" for="bookmark-domain-search">
-                            {{ __('Search by domain') }}
-                        </label>
-                        <div class="relative">
-                            <svg viewBox="0 0 24 24" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" aria-hidden="true">
-                                <circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
-                                <path d="m20 20-4.2-4.2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
-                            </svg>
-                            <input
-                                type="text"
-                                id="bookmark-domain-search"
-                                name="domain_search"
-                                class="h-10 w-full rounded-xl border border-neutral-300 bg-white pl-10 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none"
-                                placeholder="{{ __('Search by domain (e.g. youtube.com)') }}"
-                                x-model.live="searchQuery"
-                                @pointerdown.stop
-                            />
-                        </div>
+                <div class="space-y-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+                    <p class="text-sm font-medium text-neutral-800">{{ __('Bulk actions') }}</p>
+                    <p class="text-sm text-neutral-600">{{ __('Tip: start with "Needs attention", then remove or categorize in batches.') }}</p>
 
-                        <div class="mt-3 flex flex-wrap items-center gap-2">
-                            <button
-                                type="button"
-                                class="inline-flex items-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
-                                @click="$refs.fileInput.click()"
-                            >
-                                {{ __('Import') }}
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700" wire:click="selectAllDownBookmarks" @pointerdown.stop>
+                            {{ __('Select down') }}
+                        </button>
+                        <button type="button" class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50" wire:click="clearSelectedBookmarks" @pointerdown.stop @disabled($selectedBookmarksCount === 0)>
+                            {{ __('Clear selection') }}
+                        </button>
+                        <button type="button" @class([
+                            'inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50',
+                            'border border-neutral-300 bg-white text-neutral-700' => ! $confirmingBulkDelete,
+                            'border border-red-300 bg-red-50 text-red-700' => $confirmingBulkDelete,
+                        ]) wire:click="requestDeleteSelectedBookmarks" @pointerdown.stop @disabled($selectedBookmarksCount === 0)>
+                            {{ $confirmingBulkDelete ? __('Confirm removal') : __('Remove selected') }}
+                        </button>
+                        @if ($confirmingBulkDelete)
+                            <button type="button" class="inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100" wire:click="cancelDeleteSelectedBookmarks" @pointerdown.stop>
+                                {{ __('Cancel') }}
                             </button>
-                            <button
-                                type="button"
-                                class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700"
-                                wire:click="applyAiLabelsManual"
-                                @pointerdown.stop
-                            >
-                                {{ __('AI labels') }}
-                            </button>
-                            <button
-                                type="button"
-                                class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700"
-                                wire:click="checkUrlStatuses"
-                                @pointerdown.stop
-                            >
-                                {{ __('Check URLs') }}
-                            </button>
-                            <a class="inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100" href="{{ route('bookmarks.index') }}">
-                                {{ __('Dashboard') }}
-                            </a>
-                            <a class="inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100" :href="manageCategoriesUrl">
-                                {{ __('Categories') }}
-                            </a>
-                        </div>
+                        @endif
                     </div>
 
-                    <div class="rounded-2xl border border-neutral-200 p-4">
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <h4 class="text-sm font-semibold text-neutral-800">{{ __('Bulk cleanup') }}</h4>
-                                <p class="mt-1 text-sm text-neutral-500 text-pretty">
-                                    {{ __('Select down websites and remove them in one pass.') }}
-                                </p>
-                            </div>
-                            <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-sm font-medium tabular-nums text-neutral-700">
-                                {{ $selectedBookmarksCount }}
-                            </span>
-                        </div>
+                    <div class="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                        <select id="bulk-domain-select" name="bulk_domain" aria-label="{{ __('Select domain') }}" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" wire:model="bulkDomain" @pointerdown.stop>
+                            <option value="">{{ __('Domain') }}</option>
+                            @foreach ($this->domainOptions as $option)
+                                <option value="{{ $option['domain'] }}">
+                                    {{ $option['domain'] }} ({{ $option['count'] }})
+                                </option>
+                            @endforeach
+                        </select>
 
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700"
-                                wire:click="selectAllDownBookmarks"
-                                @pointerdown.stop
-                            >
-                                {{ __('Select down') }}
-                            </button>
-                            <button
-                                type="button"
-                                class="inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                wire:click="clearSelectedBookmarks"
-                                @pointerdown.stop
-                                @disabled($selectedBookmarksCount === 0)
-                            >
-                                {{ __('Clear') }}
-                            </button>
-                            <button
-                                type="button"
-                                @class([
-                                    'inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50',
-                                    'border border-neutral-300 bg-white text-neutral-700' => ! $confirmingBulkDelete,
-                                    'border border-red-300 bg-red-50 text-red-700' => $confirmingBulkDelete,
-                                ])
-                                wire:click="requestDeleteSelectedBookmarks"
-                                @pointerdown.stop
-                                @disabled($selectedBookmarksCount === 0)
-                            >
-                                {{ $confirmingBulkDelete ? __('Confirm delete') : __('Delete selected') }}
-                            </button>
-                            @if ($confirmingBulkDelete)
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
-                                    wire:click="cancelDeleteSelectedBookmarks"
-                                    @pointerdown.stop
-                                >
-                                    {{ __('Cancel') }}
-                                </button>
-                            @endif
-                        </div>
-                    </div>
+                        <select id="bulk-category-select" name="bulk_category_id" aria-label="{{ __('Select category') }}" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" wire:model="bulkCategoryId" @pointerdown.stop>
+                            <option value="">{{ __('Category') }}</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}">
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
 
-                    <div class="rounded-2xl border border-neutral-200 p-4">
-                        <h4 class="text-sm font-semibold text-neutral-800">{{ __('Bulk categorize') }}</h4>
-                        <p class="mt-1 text-sm text-neutral-500 text-pretty">
-                            {{ __('Apply one category to all matching bookmarks from a domain.') }}
-                        </p>
-
-                        <div class="mt-3 grid gap-2">
-                            <select id="bulk-domain-select" name="bulk_domain" aria-label="{{ __('Select domain') }}" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" wire:model="bulkDomain" @pointerdown.stop>
-                                <option value="">{{ __('Select domain') }}</option>
-                                @foreach ($this->domainOptions as $option)
-                                    <option value="{{ $option['domain'] }}">
-                                        {{ $option['domain'] }} ({{ $option['count'] }})
-                                    </option>
-                                @endforeach
-                            </select>
-
-                            <select id="bulk-category-select" name="bulk_category_id" aria-label="{{ __('Select category') }}" class="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none" wire:model="bulkCategoryId" @pointerdown.stop>
-                                <option value="">{{ __('Select category') }}</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-
-                            <button
-                                type="button"
-                                class="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
-                                wire:click="bulkAssignCategory"
-                                @pointerdown.stop
-                            >
-                                {{ __('Apply') }}
-                            </button>
-                        </div>
+                        <button type="button" class="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900" wire:click="bulkAssignCategory" @pointerdown.stop>
+                            {{ __('Apply') }}
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <input
-                type="file"
-                class="hidden"
-                x-ref="fileInput"
-                accept=".html,text/html"
-                @change="handleFile($event)"
-            />
         </div>
+
+        <input
+            type="file"
+            class="hidden"
+            x-ref="fileInput"
+            accept=".html,text/html"
+            @change="handleFile($event)"
+        />
     </div>
 
     <template x-if="importStatus">
@@ -227,7 +195,174 @@
                     </div>
                 </div>
             @else
-                @foreach ($bookmarks as $bookmark)
+                @php
+                    $needsAttention = $bookmarks->filter(fn ($bookmark) => $bookmark->url_status !== 200);
+                    $healthy = $bookmarks->filter(fn ($bookmark) => $bookmark->url_status === 200);
+                @endphp
+
+                @if ($needsAttention->isNotEmpty())
+                    <div class="px-1">
+                        <h3 class="text-base font-semibold text-neutral-900">{{ __('Needs attention') }}</h3>
+                        <p class="text-sm text-neutral-500">{{ __('Down, unchecked, or still being checked.') }}</p>
+                    </div>
+                @endif
+
+                @foreach ($needsAttention as $bookmark)
+                    @php
+                        $bookmarkHost = preg_replace('/^www\./', '', parse_url($bookmark->url, PHP_URL_HOST) ?? $bookmark->url);
+                    @endphp
+                    <div
+                        class="relative rounded-2xl border border-neutral-200 bg-white px-4 py-4"
+                        wire:key="bookmark-{{ $bookmark->id }}"
+                        :style="draggingId === {{ $bookmark->id }} ? dragStyle : ''"
+                        x-show="isBookmarkVisible({{ $bookmark->id }}, @js($bookmark->url), {{ $bookmark->url_status === null ? 'null' : $bookmark->url_status }}, @js($bookmark->ai_label))"
+                        x-transition.opacity
+                        @pointerdown="startDrag($event, {{ $bookmark->id }})"
+                        @pointerup="endDrag({{ $bookmark->id }})"
+                        @pointercancel="cancelDrag()"
+                    >
+                        <div class="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-start">
+                            <div class="min-w-0 space-y-3">
+                                <div class="flex items-start pt-0.5">
+                                    <label class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-600" for="bookmark-select-{{ $bookmark->id }}">
+                                        <input
+                                            type="checkbox"
+                                            id="bookmark-select-{{ $bookmark->id }}"
+                                            name="selected_bookmark_ids[]"
+                                            aria-label="{{ __('Select bookmark') }}"
+                                            class="size-5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 sm:size-4"
+                                            value="{{ $bookmark->id }}"
+                                            wire:model.live="selectedBookmarkIds"
+                                            @pointerdown.stop
+                                        />
+                                        <span>{{ __('Select') }}</span>
+                                    </label>
+                                </div>
+
+                                <h3 class="text-base font-medium text-neutral-900">{{ $bookmark->title ?? $bookmark->url }}</h3>
+                                <p class="text-sm text-neutral-600 truncate">{{ $bookmark->url }}</p>
+
+                                <div class="flex flex-wrap items-center gap-2 text-sm">
+                                    <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-medium text-neutral-600">{{ $bookmarkHost }}</span>
+
+                                    <span
+                                        class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium
+                                        @if ($bookmark->url_status === 200)
+                                            border border-emerald-200 bg-emerald-50 text-emerald-700
+                                        @elseif (in_array($bookmark->url_status, [0, 404, 500], true))
+                                            border border-red-200 bg-red-50 text-red-700
+                                        @else
+                                            border border-amber-200 bg-amber-50 text-amber-700
+                                        @endif"
+                                    >
+                                        @if ($bookmark->url_status === 200)
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                            {{ __('Live') }}
+                                        @elseif (in_array($bookmark->url_status, [0, 404, 500], true))
+                                            <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                            {{ __('Down') }}
+                                        @elseif ($bookmark->url_status === null)
+                                            <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                                            {{ __('Unchecked') }}
+                                        @else
+                                            <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                                            {{ __('Checking') }}
+                                        @endif
+                                    </span>
+
+                                    @if ($bookmark->url_checked_at)
+                                        <span class="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-neutral-600">
+                                            {{ __('Checked') }} {{ $bookmark->url_checked_at->diffForHumans() }}
+                                        </span>
+                                    @endif
+
+                                    @if ($bookmark->ai_label)
+                                        <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 font-medium text-sky-700">
+                                            {{ $bookmark->ai_label }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                @if ($bookmark->folder_path)
+                                    <p class="text-sm text-neutral-500">
+                                        <span class="font-medium text-neutral-600">{{ __('Folder:') }}</span> {{ $bookmark->folder_path }}
+                                    </p>
+                                @endif
+
+                                <div class="grid gap-2">
+                                    <select
+                                        id="bookmark-category-{{ $bookmark->id }}"
+                                        name="selected_categories[{{ $bookmark->id }}]"
+                                        aria-label="{{ __('Select category') }}"
+                                        class="h-9 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none"
+                                        wire:model="selectedCategories.{{ $bookmark->id }}"
+                                        @pointerdown.stop
+                                    >
+                                        <option value="">{{ __('Select category') }}</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}">
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <div class="flex flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            class="inline-flex h-8 min-h-8 items-center rounded-lg bg-neutral-900 px-3 text-sm font-medium text-white"
+                                            wire:click="categorize({{ $bookmark->id }})"
+                                            @pointerdown.stop
+                                        >
+                                            {{ __('Keep bookmark') }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="inline-flex h-8 min-h-8 items-center rounded-lg border border-red-300 bg-red-50 px-3 text-sm font-medium text-red-700"
+                                            wire:click="markDeleted({{ $bookmark->id }})"
+                                            @pointerdown.stop
+                                        >
+                                            {{ __('Remove bookmark') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                @if ($bookmark->url_status === 200)
+                                    <a
+                                        href="{{ $bookmark->url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 aspect-[3/2]"
+                                        @pointerdown.stop
+                                    >
+                                        <img
+                                            src="https://s.wordpress.com/mshots/v1/{{ urlencode($bookmark->url) }}?w=960"
+                                            alt="{{ __('Website preview') }}"
+                                            class="h-full w-full object-cover"
+                                            loading="lazy"
+                                            referrerpolicy="no-referrer"
+                                            onerror="this.closest('a')?.classList.add('hidden')"
+                                        />
+                                    </a>
+                                @else
+                                    <div class="flex aspect-[3/2] items-center justify-center rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 text-center text-sm text-neutral-500">
+                                        {{ __('Preview appears after a live check.') }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                @if ($healthy->isNotEmpty())
+                    <div class="px-1 pt-2">
+                        <h3 class="text-base font-semibold text-neutral-900">{{ __('Likely healthy') }}</h3>
+                        <p class="text-sm text-neutral-500">{{ __('Pages that responded successfully.') }}</p>
+                    </div>
+                @endif
+
+                @foreach ($healthy as $bookmark)
                     @php
                         $bookmarkHost = preg_replace('/^www\./', '', parse_url($bookmark->url, PHP_URL_HOST) ?? $bookmark->url);
                     @endphp
@@ -307,6 +442,12 @@
                                     {{ $bookmark->url }}
                                 </a>
 
+                                @if ($bookmark->url_checked_at)
+                                    <p class="text-sm text-neutral-500">
+                                        {{ __('Checked') }} {{ $bookmark->url_checked_at->diffForHumans() }}
+                                    </p>
+                                @endif
+
                                 @if ($bookmark->folder_path)
                                     <p class="mt-2 truncate text-sm text-neutral-500">
                                         <span class="font-medium text-neutral-600">{{ __('Folder:') }}</span> {{ $bookmark->folder_path }}
@@ -337,7 +478,7 @@
                                             wire:click="categorize({{ $bookmark->id }})"
                                             @pointerdown.stop
                                         >
-                                            {{ __('Keep') }}
+                                            {{ __('Keep bookmark') }}
                                         </button>
                                         <button
                                             type="button"
@@ -345,7 +486,7 @@
                                             wire:click="markDeleted({{ $bookmark->id }})"
                                             @pointerdown.stop
                                         >
-                                            {{ __('Delete') }}
+                                            {{ __('Remove bookmark') }}
                                         </button>
                                     </div>
                                 </div>
@@ -382,12 +523,12 @@
         </div>
 
         <div class="rounded-3xl border border-neutral-200 bg-white p-5">
-            <h4 class="text-sm font-semibold text-neutral-800">{{ __('How it works') }}</h4>
+            <h4 class="text-sm font-semibold text-neutral-800">{{ __('Need help deciding quickly?') }}</h4>
             <ul class="mt-3 space-y-2 text-sm text-neutral-600" role="list">
-                <li>{{ __('Import your bookmarks HTML file to load them here.') }}</li>
-                <li>{{ __('Pick a category and click categorize to keep them organized.') }}</li>
-                <li>{{ __('Swipe left to delete, swipe right to pick a category.') }}</li>
-                <li>{{ __('Use the dashboard to manage categories anytime.') }}</li>
+                <li>{{ __('Start with the "Needs attention" filter to triage broken links first.') }}</li>
+                <li>{{ __('Use "Suggest categories" to pre-label links before bulk assigning.') }}</li>
+                <li>{{ __('Use Shift + D to quickly select down links, then remove or categorize.') }}</li>
+                <li>{{ __('Open Manage categories anytime to refine your label system.') }}</li>
             </ul>
         </div>
 
@@ -586,6 +727,32 @@
                 }
 
                 return true;
+            },
+
+            handleShortcut(event) {
+                const target = event.target;
+                if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+                    return;
+                }
+
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+                    event.preventDefault();
+                    this.$refs.domainSearchInput?.focus();
+                    return;
+                }
+
+                if (event.shiftKey && event.key.toLowerCase() === 'd') {
+                    event.preventDefault();
+                    this.$wire.selectAllDownBookmarks();
+                    this.showToastMessage('{{ __('Selected down bookmarks.') }}');
+                    return;
+                }
+
+                if (event.shiftKey && event.key.toLowerCase() === 'c') {
+                    event.preventDefault();
+                    this.$wire.clearSelectedBookmarks();
+                    this.showToastMessage('{{ __('Selection cleared.') }}');
+                }
             },
 
             isBookmarkVisible(id, url, urlStatus, aiLabel) {

@@ -1,7 +1,7 @@
 <div x-data="themeToggle()" {{ $attributes->merge(['class' => 'flex items-center']) }}>
     <button
         type="button"
-        class="inline-flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+        class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-white/10 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
         @click="toggleTheme()"
         :aria-label="isDark ? '{{ __('Switch to light mode') }}' : '{{ __('Switch to dark mode') }}'"
         :title="isDark ? '{{ __('Switch to light mode') }}' : '{{ __('Switch to dark mode') }}'"

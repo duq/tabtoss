@@ -41,12 +41,12 @@
     }
 
     html.dark {
-        background-color: #020617;
+        background-color: #09090b;
     }
 
     html.dark body {
-        background-color: #020617;
-        color: #e2e8f0;
+        background-color: #09090b;
+        color: #e4e4e7;
     }
 
     /* Blog Post Styles */
@@ -144,9 +144,9 @@
     }
 
     html.dark pre {
-        background-color: #0f172a !important;
-        color: #e2e8f0;
-        border: 1px solid rgba(148, 163, 184, 0.16);
+        background-color: #18181b !important;
+        color: #e4e4e7;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     code {
@@ -157,8 +157,8 @@
     }
 
     html.dark code {
-        background-color: #1e293b;
-        color: #e2e8f0;
+        background-color: #27272a;
+        color: #e4e4e7;
     }
 
     /* Hide scrollbar */
@@ -195,8 +195,8 @@
     }
 
     html.dark .copy-button {
-        background-color: #334155;
-        color: #f8fafc;
+        background-color: #27272a;
+        color: #f4f4f5;
     }
 
     /* Glowing button */
@@ -238,56 +238,56 @@
     }
 
     html.dark a {
-        color: var(--color-primary-300);
+        color: #d4d4d8;
     }
 }
 
 @layer components {
     html.dark .text-primary-900 {
-        color: #f8fafc !important;
+        color: #fafafa !important;
     }
 
     html.dark .text-neutral-800,
     html.dark .text-neutral-700 {
-        color: #e2e8f0 !important;
+        color: #e4e4e7 !important;
     }
 
     html.dark .text-neutral-600,
     html.dark .text-neutral-500 {
-        color: #94a3b8 !important;
+        color: #a1a1aa !important;
     }
 
     html.dark .text-neutral-400 {
-        color: #64748b !important;
+        color: #71717a !important;
     }
 
     html.dark .bg-white {
-        background-color: #0f172a !important;
+        background-color: #18181b !important;
     }
 
     html.dark .bg-neutral-50 {
-        background-color: #111827 !important;
+        background-color: #27272a !important;
     }
 
     html.dark .border-neutral-200 {
-        border-color: rgba(148, 163, 184, 0.18) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
     }
 
     html.dark .border-neutral-100 {
-        border-color: rgba(148, 163, 184, 0.12) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
     }
 
     html.dark .shadow-sm {
-        box-shadow: 0 10px 25px -15px rgba(2, 6, 23, 0.75) !important;
+        box-shadow: none !important;
     }
 
     html.dark .shadow-lg,
     html.dark .shadow-xl {
-        box-shadow: 0 24px 45px -30px rgba(2, 6, 23, 0.85) !important;
+        box-shadow: none !important;
     }
 
     html.dark .left-shadow {
-        box-shadow: -20px 0 20px -20px rgba(15, 23, 42, 0.95);
+        box-shadow: -20px 0 20px -20px rgba(0, 0, 0, 0.75);
     }
 }
 
